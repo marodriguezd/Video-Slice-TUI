@@ -2,7 +2,7 @@
 
 A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping video files directly from your terminal.
 
-![Screenshot of Video Clipper TUI](https://i.imgur.com/8VfV3Yj.png) 
+![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
 
 ## Overview
 
