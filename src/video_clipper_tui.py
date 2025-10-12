@@ -180,39 +180,39 @@ class VideoClipperApp(App):
                 with Horizontal(id="filebox"):
                     self.file_input = Input(
                         value=self.video_path or "", 
-                        placeholder="Ruta del vídeo (o usa el botón para seleccionar)"
+                        placeholder="Video path (or use the button to select)"
                     )
                     yield self.file_input
-                    yield Button("📁 Seleccionar", id="load_btn", variant="primary")
+                    yield Button("📁 Select", id="load_btn", variant="primary")
                 
                 # Time inputs section
                 with Horizontal(id="time_inputs"):
                     with Vertical(classes="time_group"):
-                        yield Label("⏱️ Inicio (HH:MM:SS, MM:SS, SS o minutos decimales)")
-                        self.start_input = Input(placeholder="ej: 3:50 o 3.5")
+                        yield Label("⏱️ Start (HH:MM:SS, MM:SS, SS or decimal minutes)")
+                        self.start_input = Input(placeholder="e.g., 3:50 or 3.5")
                         yield self.start_input
                     
                     with Vertical(classes="time_group"):
-                        yield Label("⏱️ Fin (vacío = hasta el final)")
-                        self.end_input = Input(placeholder="ej: 4:10 (opcional)")
+                        yield Label("⏱️ End (empty = until the end)")
+                        self.end_input = Input(placeholder="e.g., 4:10 (optional)")
                         yield self.end_input
                     
-                    yield Button("➕ Añadir", id="add_range_btn", variant="success")
+                    yield Button("➕ Add", id="add_range_btn", variant="success")
                 
                 # Ranges table section
                 with Vertical(id="ranges"):
-                    yield Static("📋 Rangos añadidos:", id="ranges_header")
+                    yield Static("📋 Added Ranges:", id="ranges_header")
                     self.ranges_table = DataTable()
-                    self.ranges_table.add_columns("#", "Inicio", "Fin", "Duración")
+                    self.ranges_table.add_columns("#", "Start", "End", "Duration")
                     self.ranges_table.cursor_type = "row"
                     yield self.ranges_table
                     
                     # Actions
                     with Horizontal(id="actions"):
-                        yield Button("🗑️ Eliminar", id="del_btn", variant="error")
-                        self.reencode_cb = Checkbox("🎯 Re-encode (corte preciso)", value=False)
+                        yield Button("🗑️ Delete", id="del_btn", variant="error")
+                        self.reencode_cb = Checkbox("🎯 Re-encode (precise cut)", value=False)
                         yield self.reencode_cb
-                        yield Button("🚀 Exportar clips", id="export_btn", variant="success")
+                        yield Button("🚀 Export Clips", id="export_btn", variant="success")
                 
                 # Log section
                 with Vertical(id="log_section"):
@@ -237,12 +237,12 @@ class VideoClipperApp(App):
     def open_file_dialog(self):
         """Open tkinter file dialog to select video."""
         root = tk.Tk()
-        root.withdraw()  # Ocultar ventana principal
+        root.withdraw()  # Hide main window
         file_path = filedialog.askopenfilename(
-            title="Selecciona un video",
+            title="Select a video",
             filetypes=[
-                ("Archivos de video", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.m4v"),
-                ("Todos los archivos", "*.*")
+                ("Video files", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.m4v"),
+                ("All files", "*.*")
             ]
         )
         root.destroy()
@@ -266,9 +266,9 @@ class VideoClipperApp(App):
                     clean_path = abs_path
         
         if not os.path.exists(clean_path):
-            self.write_log(f"❌ Archivo no encontrado\n")
-            self.write_log(f"   Ruta buscada: {clean_path}\n")
-            self.write_log(f"   Verifica que el archivo existe\n")
+            self.write_log(f"❌ File not found\n")
+            self.write_log(f"   Searched path: {clean_path}\n")
+            self.write_log(f"   Verify that the file exists\n")
             return
         
         # Store the clean path
@@ -290,22 +290,22 @@ class VideoClipperApp(App):
             if proc.returncode == 0:
                 duration_str = stdout.decode().strip()
                 self._video_duration = float(duration_str)
-                self.write_log(f"✅ Video cargado: {os.path.basename(clean_path)}\n")
-                self.write_log(f"⏱️ Duración total: {format_hhmmss(self._video_duration)}\n")
+                self.write_log(f"✅ Video loaded: {os.path.basename(clean_path)}\n")
+                self.write_log(f"⏱️ Total duration: {format_hhmmss(self._video_duration)}\n")
             else:
                 err = stderr.decode(errors='ignore')[:300]
-                self.write_log(f"⚠️ Error de ffprobe:\n{err}\n")
-                self.write_log(f"   Aún puedes añadir rangos especificando inicio y fin\n")
+                self.write_log(f"⚠️ ffprobe error:\n{err}\n")
+                self.write_log(f"   You can still add ranges by specifying start and end\n")
                 self._video_duration = None
         except Exception as exc:
             self.write_log(f"⚠️ Error: {exc}\n")
-            self.write_log(f"   Aún puedes añadir rangos especificando inicio y fin\n")
+            self.write_log(f"   You can still add ranges by specifying start and end\n")
             self._video_duration = None
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         btn = event.button
         if btn.id == "load_btn":
-            # Primero, intenta con el input manual
+            # First, try with manual input
             path = self.file_input.value.strip().strip('"').strip("'")
             if path and os.path.exists(path):
                 self.video_path = path
@@ -313,20 +313,20 @@ class VideoClipperApp(App):
                 asyncio.create_task(self.load_video_info())
                 return
             
-            # Si no, abre el diálogo
+            # Otherwise, open the dialog
             file_path = self.open_file_dialog()
             if file_path:
                 self.video_path = file_path
                 self.file_input.value = f'"{file_path}"'
                 asyncio.create_task(self.load_video_info())
             else:
-                self.write_log("ℹ️ Usa el input o el botón para seleccionar un archivo\n")
+                self.write_log("ℹ️ Use the input or the button to select a file\n")
         
         elif btn.id == "add_range_btn":
             start = self.start_input.value.strip()
             end = self.end_input.value.strip()
             if not start:
-                self.write_log("⚠️ Debes especificar al menos el tiempo de inicio\n")
+                self.write_log("⚠️ You must specify at least the start time\n")
                 return
             self.add_range(start, end)
         
@@ -357,16 +357,16 @@ class VideoClipperApp(App):
             # If no end time specified
             if not end_str:
                 if self._video_duration is None:
-                    self.write_log("⚠️ Especifica tiempo de fin o carga el video para usar fin automático\n")
+                    self.write_log("⚠️ Specify end time or load video to use auto end\n")
                     return
                 e = self._video_duration
-                self.write_log(f"ℹ️ Usando fin automático: {format_hhmmss(e)}\n")
+                self.write_log(f"ℹ️ Using auto end: {format_hhmmss(e)}\n")
             else:
                 e = parse_time(end_str)
             
             # Validate that we have a video path
             if not self.video_path:
-                self.write_log("⚠️ Primero carga un video\n")
+                self.write_log("⚠️ Load a video first\n")
                 return
             
             r = Range(s, e, self._next_idx)
@@ -382,7 +382,7 @@ class VideoClipperApp(App):
             )
             
             self.write_log(
-                f"✅ Rango #{r.idx}: {format_hhmmss(r.start)} → "
+                f"✅ Range #{r.idx}: {format_hhmmss(r.start)} → "
                 f"{format_hhmmss(r.end)} ({int(r.duration())}s)\n"
             )
             
@@ -397,7 +397,7 @@ class VideoClipperApp(App):
     def delete_selected_range(self):
         try:
             if self.ranges_table.row_count == 0:
-                self.write_log("⚠️ No hay rangos para eliminar\n")
+                self.write_log("⚠️ No ranges to delete\n")
                 return
             
             cursor_row = self.ranges_table.cursor_row
@@ -417,10 +417,10 @@ class VideoClipperApp(App):
                     f"{int(r.duration())}s"
                 )
             
-            self.write_log(f"🗑️ Eliminado rango #{idx}\n")
+            self.write_log(f"🗑️ Deleted range #{idx}\n")
             
         except Exception as exc:
-            self.write_log(f"❌ Error eliminando: {exc}\n")
+            self.write_log(f"❌ Error deleting: {exc}\n")
 
     def write_log(self, text: str):
         try:
@@ -441,19 +441,19 @@ class VideoClipperApp(App):
 
     async def export_clips(self):
         if not self.video_path:
-            self.write_log("⚠️ No hay vídeo cargado\n")
+            self.write_log("⚠️ No video loaded\n")
             return
         
         # Ensure path is clean (no quotes)
         video_path = self.video_path.strip().strip('"').strip("'").strip()
         
         if not os.path.exists(video_path):
-            self.write_log(f"❌ Archivo no encontrado para exportar\n")
-            self.write_log(f"   Ruta: {video_path}\n")
+            self.write_log(f"❌ File not found for exporting\n")
+            self.write_log(f"   Path: {video_path}\n")
             return
         
         if not self._ranges:
-            self.write_log("⚠️ No hay rangos para exportar\n")
+            self.write_log("⚠️ No ranges to export\n")
             return
         
         out_dir = os.path.join(os.path.dirname(video_path) or os.getcwd(), "clips_output")
@@ -465,13 +465,13 @@ class VideoClipperApp(App):
         # Show progress bar
         self.progress_bar.display = True
         self.progress_bar.update(total=total, progress=0)
-        self.progress_label.update(f"🔄 Exportando 0/{total} clips...")
+        self.progress_label.update(f"🔄 Exporting 0/{total} clips...")
         
         self.write_log(f"\n{'='*50}\n")
-        self.write_log(f"🚀 Iniciando exportación de {total} clips\n")
-        self.write_log(f"📁 Destino: {out_dir}\n")
-        self.write_log(f"⚙️ Modo: {'Re-encode (preciso)' if use_reencode else 'Copy (rápido)'}\n")
-        self.write_log(f"{'='*50}\n\n")
+        self.write_log(f"🚀 Starting export of {total} clips\n")
+        self.write_log(f"📁 Destination: {out_dir}\n")
+        self.write_log(f"⚙️ Mode: {'Re-encode (precise)' if use_reencode else 'Copy (fast)'}\n")
+        self.write_log(f"{ '='*50}\n\n")
         
         completed = 0
         for r in self._ranges:
@@ -495,20 +495,20 @@ class VideoClipperApp(App):
             
             # Update progress
             self.progress_bar.update(progress=completed)
-            self.progress_label.update(f"🔄 Exportando {completed}/{total} clips...")
+            self.progress_label.update(f"🔄 Exporting {completed}/{total} clips...")
         
         # Hide progress bar
         self.progress_bar.display = False
         self.progress_label.update("")
         
         self.write_log(f"\n{'='*50}\n")
-        self.write_log(f"✅ Exportación completada: {completed}/{total} clips\n")
-        self.write_log(f"📁 Clips guardados en: {out_dir}\n")
-        self.write_log(f"{'='*50}\n")
+        self.write_log(f"✅ Export complete: {completed}/{total} clips\n")
+        self.write_log(f"📁 Clips saved in: {out_dir}\n")
+        self.write_log(f"{ '='*50}\n")
 
     async def run_command(self, cmd, idx, out_path):
         try:
-            self.write_log(f"[Clip #{idx}] ⏳ Procesando... {os.path.basename(out_path)}\n")
+            self.write_log(f"[Clip #{idx}] ⏳ Processing... {os.path.basename(out_path)}\n")
             
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
@@ -518,16 +518,16 @@ class VideoClipperApp(App):
             stdout, stderr = await proc.communicate()
             
             if proc.returncode != 0:
-                self.write_log(f"[Clip #{idx}] ❌ Error en FFmpeg\n")
+                self.write_log(f"[Clip #{idx}] ❌ FFmpeg Error\n")
                 err = stderr.decode(errors='ignore')[:500]
                 self.write_log(f"{err}\n")
                 return False
             else:
                 file_size = os.path.getsize(out_path) / (1024 * 1024)  # MB
-                self.write_log(f"[Clip #{idx}] ✅ Completado ({file_size:.1f} MB)\n")
+                self.write_log(f"[Clip #{idx}] ✅ Completed ({file_size:.1f} MB)\n")
                 return True
         except Exception as exc:
-            self.write_log(f"[Clip #{idx}] ❌ Excepción: {exc}\n")
+            self.write_log(f"[Clip #{idx}] ❌ Exception: {exc}\n")
             return False
 
 
