@@ -27,16 +27,16 @@ from tkinter import filedialog
 
 def parse_time(s: str) -> float:
     """Parse a time string into seconds.
-    Accepts HH:MM:SS, MM:SS, SS, or decimal minutes (e.g. 3.5 -> 3m30s)
+    Accepts HH:MM:SS, MM:SS, SS, or decimal hours (e.g. 3.5 -> 3h30m)
     """
     s = s.strip()
     if not s:
         raise ValueError("Empty time")
-    # detect decimal minutes (e.g. 3.5)
+    # detect decimal hours (e.g. 3.5)
     if s.replace('.', '', 1).replace('-', '', 1).isdigit() and ':' not in s:
         if '.' in s:
-            minutes = float(s)
-            return minutes * 60.0
+            hours = float(s)
+            return hours * 3600.0
         else:
             return float(s)
     parts = s.split(':')
@@ -188,8 +188,8 @@ class VideoClipperApp(App):
                 # Time inputs section
                 with Horizontal(id="time_inputs"):
                     with Vertical(classes="time_group"):
-                        yield Label("⏱️ Start (HH:MM:SS, MM:SS, SS or decimal minutes)")
-                        self.start_input = Input(placeholder="e.g., 3:50 or 3.5")
+                        yield Label("⏱️ Start (HH:MM:SS, MM:SS, SS or decimal hours)")
+                        self.start_input = Input(placeholder="e.g., 3:50 or 1.5")
                         yield self.start_input
                     
                     with Vertical(classes="time_group"):

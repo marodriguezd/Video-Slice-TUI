@@ -17,7 +17,7 @@ It's built with [Textual](https://github.com/Textualize/textual), providing a ri
 
 - **Interactive TUI:** A clean and intuitive interface that runs in your terminal.
 - **Flexible File Input:** Load videos by passing a file path as a command-line argument or by using the built-in file selector.
-- **Multiple Time Formats:** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal minutes like `2.5` for 2 minutes and 30 seconds).
+- **Multiple Time Formats:** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours like `1.5` for 1 hour and 30 minutes).
 - **Multiple Clip Definitions:** Add as many time ranges as you need to the queue.
 - **Two Export Modes:**
   - **Copy Mode (Fast):** Quickly creates clips by copying the video stream without re-encoding. This is very fast but may result in less precise cuts.
