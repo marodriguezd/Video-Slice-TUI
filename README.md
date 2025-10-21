@@ -1,24 +1,25 @@
-# 🎬 Video Clipper TUI
+# 🎬 Video Clipper & Splitter TUI
 
-A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping video files directly from your terminal.
+A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping and splitting video files directly from your terminal.
 
 ![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
 
 ## Overview
 
-Video Clipper TUI is a single-file Python application that allows you to:
-- Load a video file.
-- Define multiple time ranges to create clips.
-- Export the clips quickly and easily.
+This project provides two simple and efficient Python applications with a Textual User Interface (TUI):
 
-It's built with [Textual](https://github.com/Textualize/textual), providing a rich and interactive experience in the terminal. The core clipping functionality is powered by [FFmpeg](https://ffmpeg.org/).
+- **Video Clipper:** Allows you to load a video file, define multiple specific time ranges, and export them as individual clips.
+- **Video Splitter:** An adaptation of the clipper that automatically splits a video into equal-sized chunks based on a specified duration (in minutes).
+
+Both tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for the core video processing.
 
 ## Features
 
-- **Interactive TUI:** A clean and intuitive interface that runs in your terminal.
+- **Two Tools in One:** A precise clipper for custom time ranges and an automatic splitter for fixed-duration chunks.
+- **Interactive TUI:** A clean and intuitive interface that runs in your terminal for both tools.
 - **Flexible File Input:** Load videos by passing a file path as a command-line argument or by using the built-in file selector.
-- **Multiple Time Formats:** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours like `1.5` for 1 hour and 30 minutes).
-- **Multiple Clip Definitions:** Add as many time ranges as you need to the queue.
+- **Multiple Time Formats (Clipper):** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours like `1.5` for 1 hour and 30 minutes).
+- **Automatic Splitting (Splitter):** Just define the chunk duration in minutes, and the tool will calculate the segments for you.
 - **Two Export Modes:**
   - **Copy Mode (Fast):** Quickly creates clips by copying the video stream without re-encoding. This is very fast but may result in less precise cuts.
   - **Re-encode Mode (Precise):** Re-encodes the video for frame-accurate cuts, which is slower but more precise.
@@ -66,25 +67,30 @@ FFmpeg is a crucial dependency for this application. You must install it and ens
 
 ## Usage
 
-You can run the application in two ways:
+Run the desired tool from your terminal. You can select a video file from within the application's interface.
 
-1.  **Passing a video file directly:**
-    ```sh
-    python src/video_clipper_tui.py "/path/to/your/video.mp4"
-    ```
+### 1. Video Clipper
 
-2.  **Without arguments (to open the file selector):**
-    ```sh
-    python src/video_clipper_tui.py
-    ```
+Use this tool to extract specific clips by defining start and end times.
+```sh
+python src/video_clipper_tui.py
+```
 
-Once the application is running:
-1.  The video path will be loaded if you provided it as an argument. Otherwise, you can paste the path into the input box or use the "Select" button to open a file dialog.
-2.  Enter the `Start` and `End` times for a clip.
-3.  Click the "Add" button to add the time range to the list.
-4.  Repeat for all the clips you want to create.
-5.  Choose between "Re-encode" for precision or leave it unchecked for speed.
-6.  Click the "Export clips" button to start the process.
+### 2. Video Splitter
+
+Use this tool to automatically split a video into equal-sized chunks.
+```sh
+python src/video_splitter_tui.py
+```
+
+Optionally, you can pass a path to a video file as an argument to load it automatically on startup:
+```sh
+# For the clipper
+python src/video_clipper_tui.py "/path/to/your/video.mp4"
+
+# For the splitter
+python src/video_splitter_tui.py "/path/to/your/video.mp4"
+```
 
 ## License
 
