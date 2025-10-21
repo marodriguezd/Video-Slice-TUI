@@ -1,4 +1,4 @@
-# 🎬 Video Clipper & Splitter TUI
+# 🎬 Video Slice TUI
 
 A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping and splitting video files directly from your terminal.
 
