@@ -1,5 +1,8 @@
 # 🎬 Video Slice TUI
 
+![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
+![License](https://img.shields.io/github/license/marodriguezd/Video-Slice-TUI)
+
 A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping and splitting video files directly from your terminal.
 
 ![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
@@ -57,8 +60,8 @@ FFmpeg is a crucial dependency for this application. You must install it and ens
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/Video-Clipper-TUI.git
-    cd Video-Clipper-TUI
+    git clone https://github.com/marodriguezd/Video-Slice-TUI.git
+    cd Video-Slice-TUI
     ```
 
 2.  **Install the Python dependencies:**
