@@ -10,24 +10,25 @@ A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping
 
 ## Overview
 
-This project provides two simple and efficient Python applications with a Textual User Interface (TUI):
+This project provides three simple and efficient Python applications with a Textual User Interface (TUI):
 
 - **Video Clipper:** Allows you to load a video file, define multiple specific time ranges, and export them as individual clips.
 - **Video Splitter:** An adaptation of the clipper that automatically splits a video into equal-sized chunks based on a specified duration (in minutes).
+- **Video Merger:** Allows you to select multiple video files and merge them into a single video.
 
-Both tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for the core video processing.
+All tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for the core video processing.
 
 ## Features
 
-- **Two Tools in One:** A precise clipper for custom time ranges and an automatic splitter for fixed-duration chunks.
-- **Interactive TUI:** A clean and intuitive interface that runs in your terminal for both tools.
+- **Three Tools in One:** A precise clipper for custom time ranges, an automatic splitter for fixed-duration chunks, and a merger to combine multiple videos.
+- **Interactive TUI:** A clean and intuitive interface that runs in your terminal for all three tools.
 - **Flexible File Input:** Load videos by passing a file path as a command-line argument or by using the built-in file selector.
 - **Multiple Time Formats (Clipper):** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours like `1.5` for 1 hour and 30 minutes).
 - **Automatic Splitting (Splitter):** Just define the chunk duration in minutes, and the tool will calculate the segments for you.
-- **Two Export Modes:**
+- **Two Export Modes (Clipper/Splitter):**
   - **Copy Mode (Fast):** Quickly creates clips by copying the video stream without re-encoding. This is very fast but may result in less precise cuts.
   - **Re-encode Mode (Precise):** Re-encodes the video for frame-accurate cuts, which is slower but more precise.
-- **Organized Output:** All generated clips are saved in a `clips_output` folder created in the same directory as the source video.
+- **Organized Output:** All generated clips are saved in a dedicated output folder.
 
 ## Requirements
 
@@ -87,7 +88,14 @@ Use this tool to automatically split a video into equal-sized chunks.
 python src/video_splitter_tui.py
 ```
 
-Optionally, you can pass a path to a video file as an argument to load it automatically on startup:
+### 3. Video Merger
+
+Use this tool to merge multiple videos into one.
+```sh
+python src/video_merger_tui.py
+```
+
+Optionally, you can pass a path to a video file as an argument to load it automatically on startup (Clipper/Splitter only):
 ```sh
 # For the clipper
 python src/video_clipper_tui.py "/path/to/your/video.mp4"
