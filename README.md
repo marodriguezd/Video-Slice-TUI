@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![License](https://img.shields.io/github/license/marodriguezd/Video-Slice-TUI)
 
-A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping and splitting video files directly from your terminal.
+A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping, splitting, and merging video files directly from your terminal.
 
 ![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
 <!-- ![Screenshot of Video Splitter TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot2.png) --> 
