@@ -6,7 +6,7 @@
 A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping and splitting video files directly from your terminal.
 
 ![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
-![Screenshot of Video Splitter TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot2.png) 
+<!-- ![Screenshot of Video Splitter TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot2.png) --> 
 
 ## Overview
 
