@@ -5,105 +5,115 @@
 
 A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping, splitting, and merging video files directly from your terminal.
 
-![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png) 
-<!-- ![Screenshot of Video Splitter TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot2.png) --> 
+![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png)
 
 ## Overview
 
-This project provides three simple and efficient Python applications with a Textual User Interface (TUI):
+This project provides three video tools in a unified TUI application:
 
-- **Video Clipper:** Allows you to load a video file, define multiple specific time ranges, and export them as individual clips.
-- **Video Splitter:** An adaptation of the clipper that automatically splits a video into equal-sized chunks based on a specified duration (in minutes).
-- **Video Merger:** Allows you to select multiple video files and merge them into a single video.
+- **Clipper:** Extract specific clips by defining custom time ranges
+- **Splitter:** Automatically split videos into equal-sized chunks
+- **Merger:** Combine multiple videos into a single file
 
-All tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for the core video processing.
+All tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for video processing.
+
+## Architecture
+
+```
+src/
+├── main.py                    # Unified entry point
+├── logic/                     # Business logic (reusable)
+│   ├── time_utils.py          # Time parsing/formatting
+│   ├── ffmpeg_utils.py        # FFmpeg wrappers
+│   └── models.py              # Domain models
+└── ui/                        # Interface layer
+    ├── app.py                 # Main application
+    ├── screens/               # Each tool as a screen
+    │   ├── hub_screen.py      # Tab-based navigation
+    │   ├── clipper_screen.py
+    │   ├── splitter_screen.py
+    │   └── merger_screen.py
+    └── components/            # Reusable UI components
+        ├── base_screen.py     # Base class for screens
+        ├── file_dialog.py     # File picker
+        └── logger.py          # Log widget
+```
 
 ## Features
 
-- **Three Tools in One:** A precise clipper for custom time ranges, an automatic splitter for fixed-duration chunks, and a merger to combine multiple videos.
-- **Interactive TUI:** A clean and intuitive interface that runs in your terminal for all three tools.
-- **Flexible File Input:** Load videos by passing a file path as a command-line argument or by using the built-in file selector.
-- **Multiple Time Formats (Clipper):** Specify start and end times in various formats (e.g., `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours like `1.5` for 1 hour and 30 minutes).
-- **Automatic Splitting (Splitter):** Just define the chunk duration in minutes, and the tool will calculate the segments for you.
-- **Two Export Modes (Clipper/Splitter):**
-  - **Copy Mode (Fast):** Quickly creates clips by copying the video stream without re-encoding. This is very fast but may result in less precise cuts.
-  - **Re-encode Mode (Precise):** Re-encodes the video for frame-accurate cuts, which is slower but more precise.
-- **Organized Output:** All generated clips are saved in a dedicated output folder.
+- **Unified Hub:** Access all tools from one interface with tab navigation
+- **Interactive TUI:** Clean, intuitive terminal interface
+- **Flexible Input:** Load videos via argument or file selector
+- **Multiple Time Formats:** `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours (`1.5`)
+- **Two Export Modes:**
+  - **Copy Mode (Fast):** Stream copy without re-encoding
+  - **Re-encode Mode (Precise):** Frame-accurate cuts
+- **Extensible:** Easy to add new tools following the same patterns
 
 ## Requirements
 
-To run this application, you need:
 - **Python 3.7+**
-- **pip** (Python package installer)
-- **FFmpeg**
+- **pip**
+- **FFmpeg** (must be in PATH)
 
 ### FFmpeg Installation
 
-FFmpeg is a crucial dependency for this application. You must install it and ensure it's available in your system's PATH.
-
-- **Windows:**
-  1. Download a static build from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/).
-  2. Extract the archive (e.g., to `C:\ffmpeg`).
-  3. Add the `bin` directory (e.g., `C:\ffmpeg\bin`) to your system's `PATH` environment variable.
-
-- **macOS** (using [Homebrew](https://brew.sh/)):
-  ```sh
-  brew install ffmpeg
-  ```
-
-- **Linux** (using `apt` for Debian/Ubuntu):
-  ```sh
-  sudo apt update
-  sudo apt install ffmpeg
-  ```
+- **Windows:** Download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/) and add `bin` to PATH
+- **macOS:** `brew install ffmpeg`
+- **Linux:** `sudo apt install ffmpeg`
 
 ## Installation
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/marodriguezd/Video-Slice-TUI.git
-    cd Video-Slice-TUI
-    ```
-
-2.  **Install the Python dependencies:**
-    ```sh
-    pip install -r requirements.txt
-    ```
+```sh
+git clone https://github.com/marodriguezd/Video-Slice-TUI.git
+cd Video-Slice-TUI
+pip install -r requirements.txt
+```
 
 ## Usage
 
-Run the desired tool from your terminal. You can select a video file from within the application's interface.
+### Hub (all tools)
 
-### 1. Video Clipper
-
-Use this tool to extract specific clips by defining start and end times.
 ```sh
-python src/video_clipper_tui.py
+python src/main.py
 ```
 
-### 2. Video Splitter
+Navigate between tools using:
+- **Tab keys** or click on tabs
+- **Keyboard shortcuts:** `1` = Clipper, `2` = Splitter, `3` = Merger
+- **q** = Quit
 
-Use this tool to automatically split a video into equal-sized chunks.
+### Direct tool access
+
 ```sh
-python src/video_splitter_tui.py
+python src/main.py --tool clipper    # Open directly in Clipper
+python src/main.py --tool splitter   # Open directly in Splitter
+python src/main.py --tool merger     # Open directly in Merger
 ```
 
-### 3. Video Merger
+### Load video on startup
 
-Use this tool to merge multiple videos into one.
 ```sh
-python src/video_merger_tui.py
+python src/main.py --tool clipper --video "/path/to/video.mp4"
+python src/main.py --tool splitter --video "/path/to/video.mp4"
 ```
 
-Optionally, you can pass a path to a video file as an argument to load it automatically on startup (Clipper/Splitter only):
-```sh
-# For the clipper
-python src/video_clipper_tui.py "/path/to/your/video.mp4"
+### Alternative entry point
 
-# For the splitter
-python src/video_splitter_tui.py "/path/to/your/video.mp4"
+```sh
+python -m src
 ```
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `1` | Switch to Clipper tab |
+| `2` | Switch to Splitter tab |
+| `3` | Switch to Merger tab |
+| `q` | Quit application |
+| `Esc` | Quit application |
 
 ## License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+Apache License 2.0. See [LICENSE](LICENSE) file.
