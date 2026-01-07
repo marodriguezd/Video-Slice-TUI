@@ -1,119 +1,88 @@
 # 🎬 Video Slice TUI
 
-![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
-![License](https://img.shields.io/github/license/marodriguezd/Video-Slice-TUI)
+[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/github/license/marodriguezd/Video-Slice-TUI)](LICENSE)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-green.svg)](https://ffmpeg.org/)
 
-A simple, efficient, and user-friendly Textual User Interface (TUI) for clipping, splitting, and merging video files directly from your terminal.
+**Video Slice TUI** is a modern, high-performance terminal interface designed for effortless video manipulation. Built with [Textual](https://github.com/Textualize/textual), it provides a suite of professional tools—Clipper, Splitter, and Merger—powered by the robust FFmpeg engine.
 
-![Screenshot of Video Clipper TUI](https://raw.githubusercontent.com/marodriguezd/Video-Clipper-TUI/main/assets/screenshot.png)
+![Hub Screen](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/hub.png)
 
-## Overview
+---
 
-This project provides three video tools in a unified TUI application:
+## 🚀 Overview
 
-- **Clipper:** Extract specific clips by defining custom time ranges
-- **Splitter:** Automatically split videos into equal-sized chunks
-- **Merger:** Combine multiple videos into a single file
+Tired of complex GUI video editors or bloated software? Video Slice TUI brings professional-grade video processing directly to your terminal. It offers a clean, keyboard-centric workflow that simplifies common tasks like extracting highlights, creating chunks for social media, or concatenating multiple clips.
 
-All tools are built with [Textual](https://github.com/Textualize/textual) and use [FFmpeg](https://ffmpeg.org/) for video processing.
+## ✨ Key Features
 
-## Architecture
+### 🏠 Centralized Hub
+Managing your project starts here. Select your main video and define your global export route. The Hub acts as the command center, propagating your settings across all tools for a seamless experience.
 
-```
-src/
-├── main.py                    # Unified entry point
-├── logic/                     # Business logic (reusable)
-│   ├── time_utils.py          # Time parsing/formatting
-│   ├── ffmpeg_utils.py        # FFmpeg wrappers
-│   └── models.py              # Domain models
-└── ui/                        # Interface layer
-    ├── app.py                 # Main application
-    ├── screens/               # Each tool as a screen
-    │   ├── hub_screen.py      # Tab-based navigation
-    │   ├── clipper_screen.py
-    │   ├── splitter_screen.py
-    │   └── merger_screen.py
-    └── components/            # Reusable UI components
-        ├── base_screen.py     # Base class for screens
-        ├── file_dialog.py     # File picker
-        └── logger.py          # Log widget
-```
+### ✂️ Video Clipper
+Extract specific moments with precision. Define multiple time ranges, preview durations, and choose between lightning-fast "Stream Copy" or frame-accurate "Re-encoding".
 
-## Features
+![Clipper Tool](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/clipper.png)
 
-- **Unified Hub:** Access all tools from one interface with tab navigation
-- **Interactive TUI:** Clean, intuitive terminal interface
-- **Flexible Input:** Load videos via argument or file selector
-- **Multiple Time Formats:** `HH:MM:SS`, `MM:SS`, `SS`, or decimal hours (`1.5`)
-- **Two Export Modes:**
-  - **Copy Mode (Fast):** Stream copy without re-encoding
-  - **Re-encode Mode (Precise):** Frame-accurate cuts
-- **Extensible:** Easy to add new tools following the same patterns
+### 🔪 Video Splitter
+Automate your content creation. Split long videos into perfectly timed chunks (e.g., 10-minute segments) with a single click. Ideal for platform-specific uploads.
 
-## Requirements
+![Splitter Tool](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/splitter.png)
+
+### 🔗 Video Merger
+Combine multiple video files into a single, high-quality output. Add videos to your queue, manage their order, and merge them instantly using the concat protocol.
+
+![Merger Tool](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/merger.png)
+
+---
+
+## 🛠️ Prerequisites
 
 - **Python 3.7+**
-- **pip**
-- **FFmpeg** (must be in PATH)
+- **FFmpeg**: Must be installed and accessible in your system's PATH.
+  - **Windows**: [gyan.dev](https://www.gyan.dev/ffmpeg/builds/)
+  - **macOS**: `brew install ffmpeg`
+  - **Linux**: `sudo apt install ffmpeg`
 
-### FFmpeg Installation
+## 📦 Installation
 
-- **Windows:** Download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/) and add `bin` to PATH
-- **macOS:** `brew install ffmpeg`
-- **Linux:** `sudo apt install ffmpeg`
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/marodriguezd/Video-Slice-TUI.git
+   cd Video-Slice-TUI
+   ```
 
-## Installation
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```sh
-git clone https://github.com/marodriguezd/Video-Slice-TUI.git
-cd Video-Slice-TUI
-pip install -r requirements.txt
-```
+## ⌨️ Usage
 
-## Usage
-
-### Hub (all tools)
-
-```sh
+Launch the application:
+```bash
 python src/main.py
 ```
 
-Navigate between tools using:
-- **Tab keys** or click on tabs
-- **Keyboard shortcuts:** `1` = Clipper, `2` = Splitter, `3` = Merger
-- **q** = Quit
-
-### Direct tool access
-
-```sh
-python src/main.py --tool clipper    # Open directly in Clipper
-python src/main.py --tool splitter   # Open directly in Splitter
-python src/main.py --tool merger     # Open directly in Merger
-```
-
-### Load video on startup
-
-```sh
-python src/main.py --tool clipper --video "/path/to/video.mp4"
-python src/main.py --tool splitter --video "/path/to/video.mp4"
-```
-
-### Alternative entry point
-
-```sh
-python -m src
-```
-
-## Keyboard Shortcuts
-
+### Keyboard Shortcuts
 | Key | Action |
 |-----|--------|
-| `1` | Switch to Clipper tab |
-| `2` | Switch to Splitter tab |
-| `3` | Switch to Merger tab |
-| `q` | Quit application |
-| `Esc` | Quit application |
+| `Tab` | Cycle through controls |
+| `q` / `Esc` | Quit Application |
+| `Mouse` | Full click support for all buttons and tabs |
 
-## License
+---
 
-Apache License 2.0. See [LICENSE](LICENSE) file.
+## 🏛️ Project Structure
+
+- `src/main.py`: Unified entry point.
+- `src/logic/`: Core processing logic and FFmpeg wrappers.
+- `src/ui/`: Responsive Terminal User Interface layer.
+- `assets/`: UI snapshots and brand assets.
+
+## 📄 License
+
+This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
+
+---
+*Created by [marodriguezd](https://github.com/marodriguezd)*

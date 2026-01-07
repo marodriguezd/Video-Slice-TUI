@@ -65,6 +65,14 @@ class HubScreen(Container):
     #hub_clear_video_btn, #hub_clear_export_btn {
         width: 12;
     }
+    .resize-warning {
+        margin: 0 0 1 0;
+        color: $text-muted;
+        text-align: center;
+        width: 100%;
+        text-style: italic;
+        background: $boost;
+    }
     TabbedContent {
         height: 1fr;
     }
@@ -82,6 +90,10 @@ class HubScreen(Container):
 
     def compose(self) -> ComposeResult:
         yield Static("🎬 VIDEO SLICE TUI", id="app-header")
+        yield Label(
+            "⚠️ Note: Resize terminal vertically if UI elements overlap.",
+            classes="resize-warning",
+        )
 
         with TabbedContent(initial="hub"):
             with TabPane("🏠 HUB", id="hub"):
