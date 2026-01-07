@@ -2,13 +2,21 @@
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Input, Label, Static, DataTable, Checkbox, ProgressBar
+from textual.widgets import (
+    Button,
+    Input,
+    Label,
+    Static,
+    DataTable,
+    Checkbox,
+    ProgressBar,
+)
 from textual import work
 import asyncio
 import os
 
 from ui.components import ScreenBase
-from logic import parse_time, format_hhmmss, run_ffmpeg, Range
+from logic import parse_time, format_hhmmss, run_ffmpeg, Range, clean_video_path
 
 
 class ClipperScreen(ScreenBase):
@@ -17,19 +25,12 @@ class ClipperScreen(ScreenBase):
     CSS = (
         ScreenBase.CSS
         + """
-    .clipper-title {
-        text-align: center;
-        text-style: bold;
-        margin: 1 0;
-        color: $accent;
-        background: $boost;
-        border: double $accent;
-    }
     .input-section {
         height: auto;
-        border: tall $primary;
-        margin-bottom: 1;
-        padding: 1;
+    }
+    .time-inputs {
+        height: auto;
+        margin: 1 0;
     }
     """
     )
@@ -38,22 +39,14 @@ class ClipperScreen(ScreenBase):
         super().__init__(**kwargs)
         self._ranges = []
         self._next_idx = 1
+        self._custom_output_path = None
 
     def _compose_content(self) -> ComposeResult:
         with Vertical(classes="screen-container"):
-            yield Static("🔪 VIDEO CLIPPER", classes="clipper-title")
+            yield Static("🔪 VIDEO CLIPPER", classes="screen-title")
 
-            with Vertical(classes="input-section"):
-                yield Label("📁 Video Source")
-                self.file_input = Input(
-                    placeholder="Path to video file..."
-                )
-                yield self.file_input
-                
-                with Horizontal(classes="control-row"):
-                    yield Button("Add Video", id="load_btn", variant="primary")
-                    yield Button("Clear All", id="clear_all_btn", variant="error")
-
+            with Vertical(classes="times-section"):
+                yield Label("⏱️ Times", classes="section-header")
                 with Horizontal(classes="time-inputs"):
                     with Vertical(classes="input-group"):
                         yield Label("⏱️ Start Time")
@@ -66,7 +59,7 @@ class ClipperScreen(ScreenBase):
                         yield self.end_input
 
                     with Vertical(classes="input-group", id="add-btn-group"):
-                        yield Label("") # spacer
+                        yield Label("")
                         yield Button("Add Range", id="add_range_btn", variant="success")
 
             with Vertical(classes="data-section"):
@@ -78,16 +71,11 @@ class ClipperScreen(ScreenBase):
 
                 with Horizontal(classes="control-row"):
                     yield Button("Remove Selected", id="del_btn", variant="error")
-                    self.reencode_cb = Checkbox(
-                        "Precise Cut (Slower)", value=False
-                    )
-                    yield self.reencode_cb
-                    yield Button("START EXPORT", id="export_btn", variant="success")
 
-            with Vertical(classes="log-section"):
-                yield Static("📝 LOGS", classes="section-header")
-                self.log_box = Static("")
-                yield self.log_box
+            with Horizontal(classes="export-row"):
+                self.reencode_cb = Checkbox("Precise Cut (Slower)", value=False)
+                yield self.reencode_cb
+                yield Button("START EXPORT", id="export_btn", variant="success")
 
             with Vertical(classes="progress-section"):
                 self.progress_label = Static("")
@@ -96,24 +84,10 @@ class ClipperScreen(ScreenBase):
                 self.progress_bar.display = False
                 yield self.progress_bar
 
-
     def on_button_pressed(self, event: Button.Pressed) -> None:
         btn = event.button
 
-        if btn.id == "load_btn":
-            def handle_file(file_path):
-                if file_path:
-                    self.try_load_path(file_path)
-                else:
-                    self.write_log("ℹ️ Use the input or the button to select a file\n")
-
-            self.open_file_dialog(handle_file)
-
-        elif btn.id == "clear_all_btn":
-            self.try_load_path("")
-            self.write_log("🗑️ Video cleared\n")
-
-        elif btn.id == "add_range_btn":
+        if btn.id == "add_range_btn":
             self.add_range()
 
         elif btn.id == "del_btn":
@@ -123,13 +97,7 @@ class ClipperScreen(ScreenBase):
             asyncio.create_task(self.export_clips())
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        if event.input == self.file_input:
-            value = event.value.strip()
-            # If it looks like a PowerShell/CMD path or has extra artifacts
-            if value.startswith('&') or ('"' in value and not (value.startswith('"') and value.endswith('"'))):
-                cleaned = self.try_load_path(value)
-                if cleaned:
-                    self.write_log(f"🧹 Path cleaned and loaded\n")
+        pass
 
     def on_video_cleared(self) -> None:
         """Reset internal state and clear UI tables."""
@@ -138,12 +106,43 @@ class ClipperScreen(ScreenBase):
         if hasattr(self, "ranges_table"):
             self.ranges_table.clear()
 
+    def _get_default_output_path(self) -> str:
+        """Get the default output directory path."""
+        if self.video_path:
+            video_dir = os.path.dirname(self.video_path) or os.getcwd()
+        else:
+            video_dir = os.getcwd()
+        return os.path.join(video_dir, "clips_output")
+
+    async def load_video_info(self):
+        """Override to load video info from hub's shared video path."""
+        if not self.video_path:
+            return
+
+        path = self.video_path
+
+        if not os.path.exists(path):
+            self.show_status(f"❌ File not found: {path}", "error")
+            return
+
+        from logic import get_video_duration, format_hhmmss
+
+        duration = await get_video_duration(path)
+        if duration is not None:
+            self._video_duration = duration
+            self.show_status(
+                f"✅ {os.path.basename(path)} loaded - {format_hhmmss(duration)}",
+                "success",
+            )
+        else:
+            self.show_status("⚠️ Could not get video duration", "warning")
+
     def add_range(self) -> None:
         start = self.start_input.value.strip()
         end = self.end_input.value.strip()
 
         if not start:
-            self.write_log("⚠️ You must specify at least the start time\n")
+            self.show_status("⚠️ You must specify start time", "warning")
             return
 
         try:
@@ -151,15 +150,17 @@ class ClipperScreen(ScreenBase):
 
             if not end:
                 if self._video_duration is None:
-                    self.write_log("⚠️ Specify end time or load video to use auto end\n")
+                    self.show_status(
+                        "⚠️ Specify end time or load video to use auto end", "warning"
+                    )
                     return
                 e = self._video_duration
-                self.write_log(f"ℹ️ Using auto end: {format_hhmmss(e)}\n")
+                self.show_status(f"ℹ️ Using auto end: {format_hhmmss(e)}", "warning")
             else:
                 e = parse_time(end)
 
             if not self.video_path:
-                self.write_log("⚠️ Load a video first\n")
+                self.show_status("⚠️ Load a video first", "warning")
                 return
 
             r = Range(s, e, self._next_idx)
@@ -173,22 +174,19 @@ class ClipperScreen(ScreenBase):
                 f"{int(r.duration())}s",
             )
 
-            self.write_log(
-                f"✅ Range #{r.idx}: {format_hhmmss(r.start)} → "
-                f"{format_hhmmss(r.end)} ({int(r.duration())}s)\n"
-            )
+            self.show_status(f"✅ Range #{r.idx} added", "success")
 
             self.start_input.value = ""
             self.end_input.value = ""
             self.start_input.focus()
 
         except Exception as exc:
-            self.write_log(f"❌ Error: {exc}\n")
+            self.show_status(f"❌ Error: {exc}", "error")
 
     def delete_selected_range(self):
         try:
             if self.ranges_table.row_count == 0:
-                self.write_log("⚠️ No ranges to delete\n")
+                self.show_status("⚠️ No ranges to delete", "warning")
                 return
 
             cursor_row = self.ranges_table.cursor_row
@@ -206,29 +204,47 @@ class ClipperScreen(ScreenBase):
                     f"{int(r.duration())}s",
                 )
 
-            self.write_log(f"🗑️ Deleted range #{idx}\n")
+            self.show_status(f"🗑️ Deleted range #{idx}", "warning")
 
         except Exception as exc:
-            self.write_log(f"❌ Error deleting: {exc}\n")
+            self.show_status(f"❌ Error deleting: {exc}", "error")
+
+    def _get_output_directory(self) -> str:
+        """Get the output directory, either custom or default."""
+        if self._custom_output_path:
+            return self._custom_output_path
+        return self._get_default_output_path()
+
+    def _validate_output_path(self, path: str) -> tuple[bool, str]:
+        """Validate that the output path is writable."""
+        if not os.path.exists(path):
+            return False, f"Folder does not exist: {path}"
+        if not os.access(path, os.W_OK):
+            return False, f"Folder is not writable: {path}"
+        return True, ""
 
     async def export_clips(self):
         if not self.video_path:
-            self.write_log("⚠️ No video loaded\n")
+            self.show_status("⚠️ No video loaded", "warning")
             return
 
         video_path = clean_video_path(self.video_path)
 
         if not os.path.exists(video_path):
-            self.write_log(f"❌ File not found for exporting\n")
+            self.show_status("❌ File not found for exporting", "error")
             return
 
         if not self._ranges:
-            self.write_log("⚠️ No ranges to export\n")
+            self.show_status("⚠️ No ranges to export", "warning")
             return
 
-        out_dir = os.path.join(
-            os.path.dirname(video_path) or os.getcwd(), "clips_output"
-        )
+        out_dir = self._get_output_directory()
+
+        valid, error_msg = self._validate_output_path(out_dir)
+        if not valid:
+            self.show_status(f"❌ {error_msg}", "error")
+            return
+
         os.makedirs(out_dir, exist_ok=True)
 
         use_reencode = self.reencode_cb.value
@@ -238,13 +254,7 @@ class ClipperScreen(ScreenBase):
         self.progress_bar.update(total=total, progress=0)
         self.progress_label.update(f"🔄 Exporting 0/{total} clips...")
 
-        self.write_log(f"\n{'=' * 50}\n")
-        self.write_log(f"🚀 Starting export of {total} clips\n")
-        self.write_log(f"📁 Destination: {out_dir}\n")
-        self.write_log(
-            f"⚙️ Mode: {'Re-encode (precise)' if use_reencode else 'Copy (fast)'}\n"
-        )
-        self.write_log(f"{'=' * 50}\n\n")
+        self.show_status(f"🚀 Starting export of {total} clips to {out_dir}", "success")
 
         completed = 0
         for r in self._ranges:
@@ -283,7 +293,7 @@ class ClipperScreen(ScreenBase):
                     out_path,
                 ]
 
-            await run_ffmpeg(cmd, self.write_log, r.idx, out_path)
+            await run_ffmpeg(cmd, self._ffmpeg_log, r.idx, out_path)
             completed += 1
 
             self.progress_bar.update(progress=completed)
@@ -292,9 +302,10 @@ class ClipperScreen(ScreenBase):
         self.progress_bar.display = False
         self.progress_label.update("")
 
-        self.write_log(f"\n{'=' * 50}\n")
-        self.write_log(f"✅ Export complete: {completed}/{total} clips\n")
-        self.write_log(f"📁 Clips saved in: {out_dir}\n")
-        self.write_log(f"{'=' * 50}\n")
+        self.show_status(
+            f"✅ Export complete: {completed}/{total} clips saved in {out_dir}",
+            "success",
+        )
 
-
+    def _ffmpeg_log(self, text: str):
+        pass

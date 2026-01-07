@@ -27,13 +27,8 @@ class ScreenBase(Container):
 
     def watch_video_path(self, new_path: str) -> None:
         """Called when video_path changes."""
-        if hasattr(self, "file_input"):
-            expected_val = f'"{new_path}"' if new_path else ""
-            if self.file_input.value != expected_val:
-                self.file_input.value = expected_val
-        
         if new_path:
-             asyncio.create_task(self.load_video_info())
+            asyncio.create_task(self.load_video_info())
 
     CSS = """
     Screen {
@@ -42,16 +37,26 @@ class ScreenBase(Container):
     .screen-container {
         width: 100%;
         height: 100%;
-        padding: 0;
+        padding: 2;
     }
     .screen-title {
+        dock: top;
         text-align: center;
         text-style: bold;
-        margin-bottom: 1;
+        margin: 1 0;
+        padding: 1;
+        background: $boost;
+        color: $accent;
+        border: double $accent;
+    }
+    .section-header {
+        text-style: bold;
+        margin: 1 0;
+        color: $accent;
     }
     .control-row {
         height: auto;
-        margin-top: 1;
+        margin: 1 0;
         layout: horizontal;
         align: center middle;
     }
@@ -59,81 +64,113 @@ class ScreenBase(Container):
         width: auto;
         min-width: 16;
     }
-    .filebox {
-        height: auto;
-        margin-bottom: 1;
-        layout: horizontal;
-    }
-    .filebox > Input {
-        width: 1fr;
-    }
-    .filebox > Button {
-        width: auto;
-        min-width: 12;
-    }
-    .time-inputs {
-        height: auto;
-        margin-bottom: 1;
-    }
     .input-group {
         width: 1fr;
         height: auto;
+        padding: 0 1;
+    }
+    .input-group > Label {
+        margin-bottom: 1;
+        text-style: bold;
+        color: $accent;
+    }
+    .input-section {
+        dock: top;
+        height: auto;
+    }
+    .output-section {
+        dock: top;
+        height: auto;
+        padding: 1 0;
+    }
+    .export-row {
+        dock: top;
+        height: auto;
+        margin: 1 0;
     }
     .data-section {
         height: 1fr;
-        border: round $accent;
-        padding: 1;
-        margin-bottom: 1;
-    }
-    .section-header {
-        text-style: bold;
-        margin-bottom: 1;
-    }
-    .actions-row {
-        height: auto;
-    }
-    .log-section {
-        height: 10;
-        border: round $accent;
+        border: round $primary;
         padding: 1;
     }
+    .status-bar {
+        dock: bottom;
+        height: 1;
+        background: $surface;
+        color: $text;
+    }
+    .status-bar.error { color: $error; }
+    .status-bar.success { color: $success; }
+    .status-bar.warning { color: $warning; }
     .progress-section {
-        height: 3;
+        dock: bottom;
+        height: auto;
+        min-height: 3;
+    }
+    .progress-section > Static {
         margin-bottom: 1;
     }
     DataTable {
-        height: 1fr;
-        margin-bottom: 1;
-    }
-    Label {
-        width: auto;
-        padding: 0 1;
+        height: auto;
+        min-height: 3;
+        border: none;
     }
     Input {
         width: 1fr;
+        height: 3;
     }
     Button {
         margin: 0 1;
-        width: auto;
     }
-    ProgressBar {
-        margin: 0 1;
+    Checkbox {
+        margin: 0 2;
+    }
+    .times-section {
+        dock: top;
+        height: auto;
+    }
+    .time-inputs {
+        height: auto;
+        margin: 1 0;
     }
     """
 
     async def on_mount(self) -> None:
         """Initial sync with hub state."""
         from ui.screens.hub_screen import HubScreen
+
         try:
             hub = self.app.query_one(HubScreen)
-            shared = hub.shared_video_path
-            if shared and self.video_path != shared:
-                self.video_path = shared
+            if hub.shared_video_path and self.video_path != hub.shared_video_path:
+                self.video_path = hub.shared_video_path
         except:
             pass
 
+        self.watch(
+            self.app.query_one(HubScreen),
+            "shared_video_path",
+            self._on_hub_video_path_changed,
+        )
+        self.watch(
+            self.app.query_one(HubScreen),
+            "shared_export_path",
+            self._on_hub_export_path_changed,
+        )
+
+    def _on_hub_video_path_changed(self, path: str) -> None:
+        """Called when hub's shared_video_path changes."""
+        if path != self.video_path:
+            self.video_path = path
+
+    def _on_hub_export_path_changed(self, path: str) -> None:
+        """Called when hub's shared_export_path changes."""
+        if path != getattr(self, "_custom_output_path", ""):
+            self._custom_output_path = path
+
     def compose(self) -> ComposeResult:
         yield from self._compose_content()
+        self.status_bar = Static("", classes="status-bar")
+        yield self.status_bar
 
     def _compose_content(self) -> ComposeResult:
         raise NotImplementedError("Subclasses must implement _compose_content")
@@ -142,19 +179,19 @@ class ScreenBase(Container):
     def video_duration(self) -> float | None:
         return self._video_duration
 
-    def write_log(self, text: str):
-        try:
-            current = str(self.log_box.render())
-        except:
-            current = ""
+    def show_status(self, message: str, style: str = "", duration: float = 3.0):
+        self.status_bar.update(message)
+        self.status_bar.set_class(bool(style), style)
+        if style not in ("error",):
 
-        new_text = current + text
-        lines = new_text.split("\n")
-        if len(lines) > 20:
-            lines = lines[-20:]
-            new_text = "\n".join(lines)
+            async def _clear():
+                await asyncio.sleep(duration)
+                self.status_bar.update("")
 
-        self.log_box.update(new_text)
+            asyncio.create_task(_clear())
+
+    def clear_status(self):
+        self.status_bar.update("")
 
     def open_file_dialog(self, callback, multi: bool = False):
         """Open a native OS file selector using Tkinter in a separate thread."""
@@ -168,27 +205,61 @@ class ScreenBase(Container):
                 root = tk.Tk()
                 root.withdraw()
                 # Bring dialog to front
-                root.attributes('-topmost', True)
+                root.attributes("-topmost", True)
                 root.focus_force()
-                
+
                 if multi:
                     file_paths = filedialog.askopenfilenames(
                         title="Select Videos",
-                        filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("All files", "*.*")]
+                        filetypes=[
+                            ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
+                            ("All files", "*.*"),
+                        ],
                     )
                     if file_paths:
                         self.app.call_from_thread(callback, list(file_paths))
                 else:
                     file_path = filedialog.askopenfilename(
                         title="Select a Video",
-                        filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("All files", "*.*")]
+                        filetypes=[
+                            ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
+                            ("All files", "*.*"),
+                        ],
                     )
                     if file_path:
                         self.app.call_from_thread(callback, file_path)
-                
+
                 root.destroy()
             except Exception as e:
-                self.app.call_from_thread(self.write_log, f"❌ Dialog Error: {str(e)}\n")
+                self.app.call_from_thread(
+                    self.show_status, f"❌ Dialog Error: {str(e)}", "error"
+                )
+
+        thread = threading.Thread(target=run_dialog, daemon=True)
+        thread.start()
+
+    def open_folder_dialog(self, callback):
+        """Open a native OS folder selector using Tkinter in a separate thread."""
+        import tkinter as tk
+        from tkinter import filedialog
+        import threading
+
+        def run_dialog():
+            try:
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes("-topmost", True)
+                root.focus_force()
+
+                folder_path = filedialog.askdirectory(title="Select Output Folder")
+                if folder_path:
+                    self.app.call_from_thread(callback, folder_path)
+
+                root.destroy()
+            except Exception as e:
+                self.app.call_from_thread(
+                    self.show_status, f"❌ Dialog Error: {str(e)}", "error"
+                )
 
         thread = threading.Thread(target=run_dialog, daemon=True)
         thread.start()
@@ -198,18 +269,20 @@ class ScreenBase(Container):
         clean = clean_video_path(path)
         if clean and os.path.exists(clean):
             self.video_path = clean
-            
+
             # Notify Hub
             from ui.screens.hub_screen import HubScreen
+
             self.post_message(HubScreen.UpdateVideoPath(clean))
             return True
         elif not path:
             # Handle clearing
             self.video_path = ""
             self._video_duration = None
-            
+
             # Notify Hub
             from ui.screens.hub_screen import HubScreen
+
             self.post_message(HubScreen.UpdateVideoPath(""))
             self.on_video_cleared()
             return True
@@ -226,16 +299,18 @@ class ScreenBase(Container):
         path = clean_video_path(self.video_path)
 
         if not os.path.exists(path):
-            self.write_log(f"❌ File not found: {path}\n")
+            self.show_status(f"❌ File not found: {path}", "error")
             return
 
         duration = await get_video_duration(path)
         if duration is not None:
             self._video_duration = duration
-            self.write_log(f"✅ Video loaded: {os.path.basename(path)}\n")
-            self.write_log(f"⏱️ Duration: {format_hhmmss(duration)}\n")
+            self.show_status(
+                f"✅ {os.path.basename(path)} loaded - {format_hhmmss(duration)}",
+                "success",
+            )
         else:
-            self.write_log(f"⚠️ Could not get video duration\n")
+            self.show_status("⚠️ Could not get video duration", "warning")
 
     def update_progress(self, current: int, total: int, label: str = ""):
         if hasattr(self, "progress_bar"):
