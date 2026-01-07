@@ -58,13 +58,3 @@ async def run_ffmpeg(cmd: list[str], log_callback, idx: int, out_path: str) -> b
     except Exception as exc:
         log_callback(f"[Task #{idx}] ❌ Exception: {exc}\n")
         return False
-
-
-def clean_video_path(path: str) -> str:
-    """Clean video path string for consistent use."""
-    from .input_parsing import clean_pasted_path
-    
-    path = clean_pasted_path(path)
-    
-    # Extra check for common artifacts if needed, but clean_pasted_path handles most.
-    return path.strip()

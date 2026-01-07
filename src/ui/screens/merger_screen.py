@@ -8,7 +8,13 @@ import asyncio
 import os
 
 from ui.components import ScreenBase
-from logic import run_ffmpeg
+from logic import (
+    run_ffmpeg,
+    validate_output_path,
+    ensure_output_dir,
+    build_concat_command,
+    MERGER_OUTPUT_NAME,
+)
 
 
 class MergerScreen(ScreenBase):
@@ -101,10 +107,6 @@ class MergerScreen(ScreenBase):
 
             def handle_files(file_paths):
                 if file_paths:
-                    # FileSelector currently returns string or None.
-                    # If multi=True, it should ideally return a list.
-                    # For now, let's assume it returns a string if one selected,
-                    # or we might need to adjust FileSelector to handle multi-select properly.
                     if isinstance(file_paths, str):
                         self.add_videos([file_paths])
                     else:
@@ -123,7 +125,6 @@ class MergerScreen(ScreenBase):
                 self.output_input.value = default_path
                 self.output_input.disabled = True
 
-            # Notify Hub to clear shared state too
             from ui.screens.hub_screen import HubScreen
 
             self.post_message(HubScreen.UpdateVideoPath(""))
@@ -156,22 +157,14 @@ class MergerScreen(ScreenBase):
         """Get the default output directory path."""
         if self._videos:
             base_dir = os.path.dirname(self._videos[0])
-            return os.path.join(base_dir, "merged_output")
-        return os.path.join(os.getcwd(), "merged_output")
+            return os.path.join(base_dir, MERGER_OUTPUT_NAME)
+        return os.path.join(os.getcwd(), MERGER_OUTPUT_NAME)
 
     def _get_output_directory(self) -> str:
         """Get the output directory, either custom or default."""
         if self._custom_output_path:
             return self._custom_output_path
         return self._get_default_output_path()
-
-    def _validate_output_path(self, path: str) -> tuple[bool, str]:
-        """Validate that the output path is writable."""
-        if not os.path.exists(path):
-            return False, f"Folder does not exist: {path}"
-        if not os.access(path, os.W_OK):
-            return False, f"Folder is not writable: {path}"
-        return True, ""
 
     def add_videos(self, file_paths) -> None:
         for path in file_paths:
@@ -216,52 +209,45 @@ class MergerScreen(ScreenBase):
 
         out_dir = self._get_output_directory()
 
-        valid, error_msg = self._validate_output_path(out_dir)
+        valid, error_msg = validate_output_path(out_dir)
         if not valid:
             self.show_status(f"❌ {error_msg}", "error")
             return
 
-        os.makedirs(out_dir, exist_ok=True)
+        if not ensure_output_dir(out_dir):
+            self.show_status(
+                f"❌ Could not create output directory: {out_dir}", "error"
+            )
+            return
+
         out_path = os.path.join(out_dir, "merged_video.mp4")
 
         list_path = os.path.join(out_dir, "filelist.txt")
-        with open(list_path, "w") as f:
-            for video_path in self._videos:
-                f.write(f"file '{video_path}'\n")
-
-        self.progress_bar.display = True
-        self.progress_bar.update(total=1, progress=0)
-        self.progress_label.update("🔄 Merging videos...")
-        self.show_status("🔄 Merging videos...", "success")
-
-        cmd = [
-            "ffmpeg",
-            "-y",
-            "-f",
-            "concat",
-            "-safe",
-            "0",
-            "-i",
-            list_path,
-            "-c",
-            "copy",
-            out_path,
-        ]
-
-        success = await run_ffmpeg(cmd, self._ffmpeg_log, 1, out_path)
-
-        self.progress_bar.display = False
-        self.progress_label.update("")
-
-        if success:
-            self.show_status(f"✅ Merge complete! Saved to: {out_path}", "success")
-        else:
-            self.show_status("❌ Merge failed", "error")
-
         try:
-            os.remove(list_path)
-        except:
-            pass
+            with open(list_path, "w") as f:
+                for video_path in self._videos:
+                    f.write(f"file '{video_path}'\n")
 
-    def _ffmpeg_log(self, text: str):
-        pass
+            self.progress_bar.display = True
+            self.progress_bar.update(total=1, progress=0)
+            self.progress_label.update("🔄 Merging videos...")
+            self.show_status("🔄 Merging videos...", "success")
+
+            cmd = build_concat_command(list_path, out_path)
+
+            success = await run_ffmpeg(cmd, lambda text: None, 1, out_path)
+
+            self.progress_bar.display = False
+            self.progress_label.update("")
+
+            if success:
+                self.show_status(f"✅ Merge complete! Saved to: {out_path}", "success")
+            else:
+                self.show_status("❌ Merge failed", "error")
+        except Exception as exc:
+            self.show_status(f"❌ Error during merge: {exc}", "error")
+        finally:
+            try:
+                os.remove(list_path)
+            except OSError:
+                pass

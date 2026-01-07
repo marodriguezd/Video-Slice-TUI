@@ -1,5 +1,7 @@
 """Data models for Video Slice TUI."""
 
+import os
+
 
 class Range:
     """Represents a time range for cutting/splitting."""
@@ -13,21 +15,3 @@ class Range:
 
     def duration(self) -> float:
         return self.end - self.start
-
-
-class VideoFile:
-    """Represents a video file."""
-
-    def __init__(self, path: str, duration: float | None = None):
-        self.path = path
-        self.duration = duration
-
-    @property
-    def basename(self) -> str:
-        return os.path.basename(self.path) if self.path else ""
-
-    def __repr__(self):
-        return f"VideoFile({self.basename})"
-
-
-import os

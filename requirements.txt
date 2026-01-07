@@ -1,2 +1,7 @@
+# Core dependencies
 textual>=6.0
 rich>=14.0
+
+# Development dependencies
+pytest>=7.0
+pytest-asyncio>=0.21

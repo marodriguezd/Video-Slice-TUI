@@ -16,7 +16,18 @@ import asyncio
 import os
 
 from ui.components import ScreenBase
-from logic import format_hhmmss, run_ffmpeg, Range, clean_video_path
+from logic import (
+    format_hhmmss,
+    run_ffmpeg,
+    Range,
+    clean_video_path,
+    get_output_directory,
+    validate_output_path,
+    ensure_output_dir,
+    build_cut_command,
+    generate_clip_filename,
+    SPLITTER_OUTPUT_NAME,
+)
 
 
 class SplitterScreen(ScreenBase):
@@ -94,27 +105,11 @@ class SplitterScreen(ScreenBase):
         if hasattr(self, "ranges_table"):
             self.ranges_table.clear()
 
-    def _get_default_output_path(self) -> str:
-        """Get the default output directory path."""
-        if self.video_path:
-            video_dir = os.path.dirname(self.video_path) or os.getcwd()
-        else:
-            video_dir = os.getcwd()
-        return os.path.join(video_dir, "clips_output")
-
     def _get_output_directory(self) -> str:
         """Get the output directory, either custom or default."""
-        if self._custom_output_path:
-            return self._custom_output_path
-        return self._get_default_output_path()
-
-    def _validate_output_path(self, path: str) -> tuple[bool, str]:
-        """Validate that the output path is writable."""
-        if not os.path.exists(path):
-            return False, f"Folder does not exist: {path}"
-        if not os.access(path, os.W_OK):
-            return False, f"Folder is not writable: {path}"
-        return True, ""
+        return get_output_directory(
+            self._custom_output_path, self.video_path, SPLITTER_OUTPUT_NAME
+        )
 
     async def load_video_info(self):
         """Load video info from hub's shared video path."""
@@ -196,12 +191,16 @@ class SplitterScreen(ScreenBase):
 
         out_dir = self._get_output_directory()
 
-        valid, error_msg = self._validate_output_path(out_dir)
+        valid, error_msg = validate_output_path(out_dir)
         if not valid:
             self.show_status(f"❌ {error_msg}", "error")
             return
 
-        os.makedirs(out_dir, exist_ok=True)
+        if not ensure_output_dir(out_dir):
+            self.show_status(
+                f"❌ Could not create output directory: {out_dir}", "error"
+            )
+            return
 
         use_reencode = self.reencode_cb.value
         total = len(self._ranges)
@@ -214,42 +213,17 @@ class SplitterScreen(ScreenBase):
 
         completed = 0
         for r in self._ranges:
-            out_name = f"clip_{r.idx}_{format_hhmmss(r.start).replace(':', '-')}_to_{format_hhmmss(r.end).replace(':', '-')}.mp4"
+            out_name = generate_clip_filename(
+                r.idx, r.start, r.end, format_hhmmss(r.start), format_hhmmss(r.end)
+            ).replace(":", "-")
             out_path = os.path.join(out_dir, out_name)
             duration = r.end - r.start
 
-            if use_reencode:
-                cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-ss",
-                    str(r.start),
-                    "-i",
-                    video_path,
-                    "-t",
-                    str(duration),
-                    "-c:v",
-                    "libx264",
-                    "-c:a",
-                    "aac",
-                    out_path,
-                ]
-            else:
-                cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-ss",
-                    str(r.start),
-                    "-i",
-                    video_path,
-                    "-t",
-                    str(duration),
-                    "-c",
-                    "copy",
-                    out_path,
-                ]
+            cmd = build_cut_command(
+                video_path, r.start, duration, out_path, use_reencode
+            )
 
-            await run_ffmpeg(cmd, self._ffmpeg_log, r.idx, out_path)
+            await run_ffmpeg(cmd, lambda text: None, r.idx, out_path)
             completed += 1
 
             self.progress_bar.update(progress=completed)
@@ -262,6 +236,3 @@ class SplitterScreen(ScreenBase):
             f"✅ Export complete: {completed}/{total} clips saved in {out_dir}",
             "success",
         )
-
-    def _ffmpeg_log(self, text: str):
-        pass

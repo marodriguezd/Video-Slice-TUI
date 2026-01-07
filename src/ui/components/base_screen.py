@@ -143,7 +143,7 @@ class ScreenBase(Container):
             hub = self.app.query_one(HubScreen)
             if hub.shared_video_path and self.video_path != hub.shared_video_path:
                 self.video_path = hub.shared_video_path
-        except:
+        except Exception:
             pass
 
         self.watch(
