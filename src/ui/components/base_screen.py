@@ -28,7 +28,7 @@ class ScreenBase(Container):
     def watch_video_path(self, new_path: str) -> None:
         """Called when video_path changes."""
         if new_path:
-            asyncio.create_task(self.load_video_info())
+            self.run_worker(self.load_video_info())
 
     CSS = """
     Screen {

@@ -106,7 +106,7 @@ class ClipperScreen(ScreenBase):
             self.delete_selected_range()
 
         elif btn.id == "export_btn":
-            asyncio.create_task(self.export_clips())
+            self.export_clips()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         pass
@@ -219,6 +219,7 @@ class ClipperScreen(ScreenBase):
             self._custom_output_path, self.video_path, CLIPPER_OUTPUT_NAME
         )
 
+    @work
     async def export_clips(self):
         if not self.video_path:
             self.show_status("⚠️ No video loaded", "warning")

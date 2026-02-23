@@ -133,7 +133,7 @@ class MergerScreen(ScreenBase):
             self.delete_selected_video()
 
         elif btn.id == "export_btn":
-            asyncio.create_task(self.merge_videos())
+            self.merge_videos()
 
         elif btn.id == "output_browse_btn":
 
@@ -202,6 +202,7 @@ class MergerScreen(ScreenBase):
         except Exception as exc:
             self.show_status(f"❌ Error deleting: {exc}", "error")
 
+    @work
     async def merge_videos(self):
         if len(self._videos) < 2:
             self.show_status("⚠️ You need at least two videos to merge", "warning")

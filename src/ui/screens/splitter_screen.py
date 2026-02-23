@@ -96,7 +96,7 @@ class SplitterScreen(ScreenBase):
             self.split_video()
 
         elif btn.id == "export_btn":
-            asyncio.create_task(self.export_clips())
+            self.export_clips()
 
     def on_video_cleared(self) -> None:
         """Reset internal state and clear UI tables."""
@@ -174,6 +174,7 @@ class SplitterScreen(ScreenBase):
         except Exception as exc:
             self.show_status(f"❌ Error: {exc}", "error")
 
+    @work
     async def export_clips(self):
         if not self.video_path:
             self.show_status("⚠️ No video loaded", "warning")

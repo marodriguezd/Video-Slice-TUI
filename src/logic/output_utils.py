@@ -22,12 +22,18 @@ def get_output_directory(
 
 
 def validate_output_path(path: str) -> tuple[bool, str]:
-    """Validate that the output path is writable."""
-    if not os.path.exists(path):
-        return False, f"Folder does not exist: {path}"
-    if not os.access(path, os.W_OK):
-        return False, f"Folder is not writable: {path}"
-    return True, ""
+    """Validate that the output path (or its nearest existing parent) is writable."""
+    check = path
+    while check and not os.path.exists(check):
+        parent = os.path.dirname(check)
+        if parent == check:
+            break
+        check = parent
+    if check and os.path.exists(check):
+        if not os.access(check, os.W_OK):
+            return False, f"Folder is not writable: {check}"
+        return True, ""
+    return False, f"Cannot determine a writable location for: {path}"
 
 
 def ensure_output_dir(path: str) -> bool:
