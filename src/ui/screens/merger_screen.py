@@ -221,7 +221,8 @@ class MergerScreen(ScreenBase):
             )
             return
 
-        out_path = os.path.join(out_dir, "merged_video.mp4")
+        extension = os.path.splitext(self._videos[0])[1] or ".mp4"
+        out_path = os.path.join(out_dir, f"merged_file{extension}")
 
         list_path = os.path.join(out_dir, "filelist.txt")
         try:

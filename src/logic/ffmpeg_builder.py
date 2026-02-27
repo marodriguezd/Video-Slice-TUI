@@ -62,10 +62,15 @@ def build_concat_command(input_list_path: str, output_path: str) -> list[str]:
 
 
 def generate_clip_filename(
-    idx: int, start: float, end: float, start_formatted: str, end_formatted: str
+    idx: int,
+    start: float,
+    end: float,
+    start_formatted: str,
+    end_formatted: str,
+    extension: str = ".mp4",
 ) -> str:
     """Generate a filename for a clip based on its index and time range."""
-    return f"clip_{idx}_{start_formatted}_to_{end_formatted}.mp4"
+    return f"clip_{idx}_{start_formatted}_to_{end_formatted}{extension}"
 
 
 def generate_default_output_path(source_path: str, folder_name: str) -> str:

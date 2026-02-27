@@ -213,9 +213,15 @@ class SplitterScreen(ScreenBase):
         self.show_status(f"🚀 Starting export of {total} clips to {out_dir}", "success")
 
         completed = 0
+        extension = os.path.splitext(video_path)[1] or ".mp4"
         for r in self._ranges:
             out_name = generate_clip_filename(
-                r.idx, r.start, r.end, format_hhmmss(r.start), format_hhmmss(r.end)
+                r.idx,
+                r.start,
+                r.end,
+                format_hhmmss(r.start),
+                format_hhmmss(r.end),
+                extension=extension,
             ).replace(":", "-")
             out_path = os.path.join(out_dir, out_name)
             duration = r.end - r.start

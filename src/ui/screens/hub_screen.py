@@ -199,9 +199,10 @@ class HubScreen(Container):
                 root.focus_force()
 
                 file_path = filedialog.askopenfilename(
-                    title="Select a Video",
+                    title="Select Media",
                     filetypes=[
                         ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
+                        ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
                         ("All files", "*.*"),
                     ],
                 )
