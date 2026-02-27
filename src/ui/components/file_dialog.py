@@ -14,6 +14,7 @@ def open_file_dialog(multi: bool = False, title: str = "Select a video"):
             title=title,
             filetypes=[
                 ("Video files", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.m4v"),
+                ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
                 ("All files", "*.*"),
             ],
         )
@@ -24,6 +25,7 @@ def open_file_dialog(multi: bool = False, title: str = "Select a video"):
             title=title,
             filetypes=[
                 ("Video files", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.m4v"),
+                ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
                 ("All files", "*.*"),
             ],
         )

@@ -55,7 +55,7 @@ class ClipperScreen(ScreenBase):
 
     def _compose_content(self) -> ComposeResult:
         with Vertical(classes="screen-container"):
-            yield Static("🔪 VIDEO CLIPPER", classes="screen-title")
+            yield Static("🔪 MEDIA CLIPPER", classes="screen-title")
 
             with Vertical(classes="times-section"):
                 yield Label("⏱️ Times", classes="section-header")

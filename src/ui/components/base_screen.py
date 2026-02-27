@@ -210,9 +210,10 @@ class ScreenBase(Container):
 
                 if multi:
                     file_paths = filedialog.askopenfilenames(
-                        title="Select Videos",
+                        title="Select Media",
                         filetypes=[
                             ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
+                            ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
                             ("All files", "*.*"),
                         ],
                     )
@@ -220,9 +221,10 @@ class ScreenBase(Container):
                         self.app.call_from_thread(callback, list(file_paths))
                 else:
                     file_path = filedialog.askopenfilename(
-                        title="Select a Video",
+                        title="Select Media",
                         filetypes=[
                             ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
+                            ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
                             ("All files", "*.*"),
                         ],
                     )
@@ -310,7 +312,7 @@ class ScreenBase(Container):
                 "success",
             )
         else:
-            self.show_status("⚠️ Could not get video duration", "warning")
+            self.show_status("⚠️ Could not get media duration", "warning")
 
     def update_progress(self, current: int, total: int, label: str = ""):
         if hasattr(self, "progress_bar"):

@@ -59,12 +59,12 @@ class MergerScreen(ScreenBase):
 
     def _compose_content(self) -> ComposeResult:
         with Vertical(classes="screen-container"):
-            yield Static("🔗 VIDEO MERGER", classes="screen-title")
+            yield Static("🔗 MEDIA MERGER", classes="screen-title")
 
             with Vertical(classes="input-section"):
-                yield Label("📁 SOURCE VIDEOS", classes="section-header")
+                yield Label("📁 SOURCE FILES", classes="section-header")
                 with Horizontal(classes="control-row"):
-                    yield Button("Add Video(s)", id="add_videos_btn", variant="primary")
+                    yield Button("Add Media", id="add_videos_btn", variant="primary")
                     yield Button("Clear All", id="clear_all_btn", variant="error")
 
             with Vertical(classes="data-section"):

@@ -89,7 +89,7 @@ class HubScreen(Container):
             super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Static("🎬 VIDEO SLICE TUI", id="app-header")
+        yield Static("🎬 MEDIA SLICE TUI", id="app-header")
         yield Label(
             "⚠️ Note: Resize terminal vertically if UI elements overlap.",
             classes="resize-warning",
@@ -99,14 +99,14 @@ class HubScreen(Container):
             with TabPane("🏠 HUB", id="hub"):
                 with Vertical(classes="hub-content"):
                     with Vertical(classes="hub-section"):
-                        yield Label("🎬 MAIN VIDEO")
+                        yield Label("🎬 MAIN MEDIA (VIDEO/AUDIO)")
                         self.hub_video_input = Input(
-                            placeholder="No video selected...", disabled=True
+                            placeholder="No media selected...", disabled=True
                         )
                         yield self.hub_video_input
                         with Horizontal(classes="hub-row"):
                             yield Button(
-                                "SELECT VIDEO", id="hub_browse_video_btn", variant="primary"
+                                "SELECT MEDIA", id="hub_browse_video_btn", variant="primary"
                             )
                             yield Button("REMOVE", id="hub_clear_video_btn", variant="error")
 

@@ -54,7 +54,7 @@ class SplitterScreen(ScreenBase):
 
     def _compose_content(self) -> ComposeResult:
         with Vertical(classes="screen-container"):
-            yield Static("✂️ VIDEO SPLITTER", classes="screen-title")
+            yield Static("✂️ MEDIA SPLITTER", classes="screen-title")
 
             with Vertical(classes="split-section"):
                 yield Label("⏱️ Chunk Duration", classes="section-header")
