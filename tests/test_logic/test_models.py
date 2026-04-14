@@ -28,13 +28,13 @@ class TestRange:
         """End before start should raise ValueError."""
         with pytest.raises(ValueError) as exc_info:
             Range(60.0, 30.0, 1)
-        assert "End must be after start" in str(exc_info.value)
+        assert "End" in str(exc_info.value) and "must be after start" in str(exc_info.value)
 
     def test_equal_start_end_raises_error(self):
         """Start equals end should raise ValueError."""
         with pytest.raises(ValueError) as exc_info:
             Range(30.0, 30.0, 1)
-        assert "End must be after start" in str(exc_info.value)
+        assert "End" in str(exc_info.value) and "must be after start" in str(exc_info.value)
 
     def test_large_values(self):
         """Handle large time values."""
@@ -58,9 +58,10 @@ class TestRange:
         assert r.idx == 42
 
     def test_negative_times(self):
-        """Handle negative times (edge case)."""
-        r = Range(-10.0, 0.0, 1)
-        assert r.duration() == 10.0
+        """Negative start times should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            Range(-10.0, 0.0, 1)
+        assert "negative" in str(exc_info.value).lower()
 
     def test_attributes_are_floats(self):
         """Verify attributes are float type."""

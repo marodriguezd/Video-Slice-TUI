@@ -1,11 +1,11 @@
 """Reusable file dialog component."""
 
-import tkinter as tk
-from tkinter import filedialog
-
 
 def open_file_dialog(multi: bool = False, title: str = "Select a video"):
     """Open a file dialog and return selected path(s)."""
+    import tkinter as tk
+    from tkinter import filedialog
+    
     root = tk.Tk()
     root.withdraw()
 

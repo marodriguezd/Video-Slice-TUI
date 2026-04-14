@@ -9,6 +9,7 @@ from .output_utils import (
     get_output_directory,
     validate_output_path,
     ensure_output_dir,
+    ensure_output_dir_verbose,
 )
 from .ffmpeg_builder import (
     build_cut_command,
@@ -31,6 +32,7 @@ __all__ = [
     "get_output_directory",
     "validate_output_path",
     "ensure_output_dir",
+    "ensure_output_dir_verbose",
     "build_cut_command",
     "build_concat_command",
     "generate_clip_filename",

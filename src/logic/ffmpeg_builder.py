@@ -12,16 +12,25 @@ def build_cut_command(
     input_path: str, start: float, duration: float, output_path: str, reencode: bool
 ) -> list[str]:
     """Build FFmpeg command for cutting a video segment."""
+    if start < 0:
+        raise ValueError(f"Start time cannot be negative: {start}")
+    if duration <= 0:
+        raise ValueError(f"Duration must be positive, got: {duration}")
+
+    # Round to 3 decimal places to avoid float precision issues
+    start_rounded = round(start, 3)
+    duration_rounded = round(duration, 3)
+
     if reencode:
         return [
             "ffmpeg",
             "-y",
             "-ss",
-            str(start),
+            str(start_rounded),
             "-i",
             input_path,
             "-t",
-            str(duration),
+            str(duration_rounded),
             "-c:v",
             "libx264",
             "-c:a",
@@ -33,11 +42,11 @@ def build_cut_command(
             "ffmpeg",
             "-y",
             "-ss",
-            str(start),
+            str(start_rounded),
             "-i",
             input_path,
             "-t",
-            str(duration),
+            str(duration_rounded),
             "-c",
             "copy",
             output_path,

@@ -24,6 +24,7 @@ class ScreenBase(Container):
 
     video_path = reactive("", always_update=True)
     _video_duration = reactive(None)
+    _load_generation = 0  # Token to prevent stale results from older async calls
 
     def watch_video_path(self, new_path: str) -> None:
         """Called when video_path changes."""
@@ -298,6 +299,10 @@ class ScreenBase(Container):
         if not self.video_path:
             return
 
+        # Check generation to ignore stale results
+        current_gen = self._load_generation + 1
+        self._load_generation = current_gen
+        
         path = clean_video_path(self.video_path)
 
         if not os.path.exists(path):
@@ -305,6 +310,10 @@ class ScreenBase(Container):
             return
 
         duration = await get_video_duration(path)
+        # Only use result if this is still the current generation
+        if current_gen != self._load_generation:
+            return
+            
         if duration is not None:
             self._video_duration = duration
             self.show_status(

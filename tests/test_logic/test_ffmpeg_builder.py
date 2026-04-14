@@ -60,7 +60,9 @@ class TestBuildCutCommand:
             reencode=True,
         )
 
+        # Input path at index 5
         assert cmd[5] == r"C:\Videos\input.mp4"
+        # Output path at index 12 (no preset/b:a flags in original)
         assert cmd[12] == r"C:\Output\clip.mp4"
 
     def test_zero_start_time(self):

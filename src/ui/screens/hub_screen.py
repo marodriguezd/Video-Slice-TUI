@@ -276,6 +276,6 @@ class HubScreen(Container):
             except:
                 pass
 
-    def on_hub_screen_update_video_path(self, message: UpdateVideoPath) -> None:
+    def on_update_video_path(self, message: UpdateVideoPath) -> None:
         """Handle update message from child screens."""
         self.shared_video_path = message.path

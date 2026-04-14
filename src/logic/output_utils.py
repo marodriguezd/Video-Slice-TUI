@@ -1,6 +1,7 @@
 """Utilities for output path handling."""
 
 import os
+import errno
 
 
 def get_default_output_path(source_path: str | None, folder_name: str) -> str:
@@ -29,6 +30,7 @@ def validate_output_path(path: str) -> tuple[bool, str]:
         if parent == check:
             break
         check = parent
+    
     if check and os.path.exists(check):
         if not os.access(check, os.W_OK):
             return False, f"Folder is not writable: {check}"
@@ -37,9 +39,44 @@ def validate_output_path(path: str) -> tuple[bool, str]:
 
 
 def ensure_output_dir(path: str) -> bool:
-    """Create output directory if it doesn't exist. Returns True on success."""
+    """Create output directory if needed. Returns True on success.
+    
+    For detailed error messages, use ensure_output_dir_verbose().
+    """
+    if os.path.exists(path):
+        if not os.access(path, os.W_OK):
+            return False
+        return True
+    
     try:
         os.makedirs(path, exist_ok=True)
         return True
-    except OSError:
+    except PermissionError:
         return False
+    except OSError as e:
+        return False
+
+
+def ensure_output_dir_verbose(path: str) -> tuple[bool, str]:
+    """Create output directory if needed. Returns (success, error_message).
+    
+    Use this when you need detailed error information.
+    For simple success/failure, use ensure_output_dir().
+    """
+    if os.path.exists(path):
+        if not os.access(path, os.W_OK):
+            return False, f"Directory exists but is not writable: {path}"
+        return True, ""
+    
+    try:
+        os.makedirs(path, exist_ok=True)
+        return True, ""
+    except PermissionError:
+        return False, f"Permission denied to create directory: {path}"
+    except OSError as e:
+        if e.errno == errno.ENOSPC:
+            return False, "Disk full: not enough space to create output directory"
+        elif e.errno == errno.EROFS:
+            return False, f"Read-only file system: cannot create {path}"
+        else:
+            return False, f"OS error creating directory: {e}"

@@ -11,7 +11,7 @@ from ui.components import ScreenBase
 from logic import (
     run_ffmpeg,
     validate_output_path,
-    ensure_output_dir,
+    ensure_output_dir_verbose,
     build_concat_command,
     MERGER_OUTPUT_NAME,
 )
@@ -215,10 +215,9 @@ class MergerScreen(ScreenBase):
             self.show_status(f"❌ {error_msg}", "error")
             return
 
-        if not ensure_output_dir(out_dir):
-            self.show_status(
-                f"❌ Could not create output directory: {out_dir}", "error"
-            )
+        success, error_msg = ensure_output_dir_verbose(out_dir)
+        if not success:
+            self.show_status(f"❌ Could not create output directory: {error_msg}", "error")
             return
 
         extension = os.path.splitext(self._videos[0])[1] or ".mp4"

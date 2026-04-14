@@ -23,7 +23,7 @@ from logic import (
     clean_video_path,
     get_output_directory,
     validate_output_path,
-    ensure_output_dir,
+    ensure_output_dir_verbose,
     build_cut_command,
     generate_clip_filename,
     SPLITTER_OUTPUT_NAME,
@@ -113,26 +113,7 @@ class SplitterScreen(ScreenBase):
 
     async def load_video_info(self):
         """Load video info from hub's shared video path."""
-        if not self.video_path:
-            return
-
-        path = self.video_path
-
-        if not os.path.exists(path):
-            self.show_status(f"❌ File not found: {path}", "error")
-            return
-
-        from logic import get_video_duration, format_hhmmss
-
-        duration = await get_video_duration(path)
-        if duration is not None:
-            self._video_duration = duration
-            self.show_status(
-                f"✅ {os.path.basename(path)} loaded - {format_hhmmss(duration)}",
-                "success",
-            )
-        else:
-            self.show_status("⚠️ Could not get video duration", "warning")
+        await super().load_video_info()
 
     def split_video(self):
         try:
@@ -197,10 +178,9 @@ class SplitterScreen(ScreenBase):
             self.show_status(f"❌ {error_msg}", "error")
             return
 
-        if not ensure_output_dir(out_dir):
-            self.show_status(
-                f"❌ Could not create output directory: {out_dir}", "error"
-            )
+        success, error_msg = ensure_output_dir_verbose(out_dir)
+        if not success:
+            self.show_status(f"❌ Could not create output directory: {error_msg}", "error")
             return
 
         use_reencode = self.reencode_cb.value
