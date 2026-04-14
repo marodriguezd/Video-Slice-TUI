@@ -65,18 +65,18 @@ def ensure_output_dir_verbose(path: str) -> tuple[bool, str]:
     """
     if os.path.exists(path):
         if not os.access(path, os.W_OK):
-            return False, f"Directory exists but is not writable: {path}"
+            return False, f"Directory is not writable: {path}"
         return True, ""
     
     try:
         os.makedirs(path, exist_ok=True)
         return True, ""
     except PermissionError:
-        return False, f"Permission denied to create directory: {path}"
+        return False, f"Permission denied: {path}"
     except OSError as e:
         if e.errno == errno.ENOSPC:
-            return False, "Disk full: not enough space to create output directory"
+            return False, "Disk full"
         elif e.errno == errno.EROFS:
-            return False, f"Read-only file system: cannot create {path}"
+            return False, f"Read-only file system: {path}"
         else:
-            return False, f"OS error creating directory: {e}"
+            return False, f"OS error: {e}"
