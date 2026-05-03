@@ -2,9 +2,11 @@
 
 from ui.preferences import (
     DEFAULT_SPLITTER_MODE,
+    get_last_media_dir,
     get_splitter_mode,
     load_preferences,
     save_preferences,
+    set_last_media_dir,
     set_splitter_mode,
 )
 
@@ -43,3 +45,34 @@ def test_set_splitter_mode_and_reload(tmp_path):
 def test_set_splitter_mode_rejects_invalid_value(tmp_path):
     pref_path = tmp_path / "prefs.json"
     assert not set_splitter_mode("foo", str(pref_path))
+
+
+def test_get_last_media_dir_returns_none_when_missing(tmp_path):
+    pref_path = tmp_path / "prefs.json"
+    assert get_last_media_dir(str(pref_path)) is None
+
+
+def test_set_last_media_dir_and_reload(tmp_path):
+    pref_path = tmp_path / "prefs.json"
+    media_dir = tmp_path / "media"
+    media_dir.mkdir()
+
+    assert set_last_media_dir(str(media_dir), str(pref_path))
+    assert get_last_media_dir(str(pref_path)) == str(media_dir)
+
+
+def test_get_last_media_dir_returns_none_when_not_a_directory(tmp_path):
+    pref_path = tmp_path / "prefs.json"
+    file_path = tmp_path / "video.mp4"
+    file_path.write_text("x", encoding="utf-8")
+
+    assert save_preferences({"last_media_dir": str(file_path)}, str(pref_path))
+    assert get_last_media_dir(str(pref_path)) is None
+
+
+def test_get_last_media_dir_returns_none_when_directory_not_exists(tmp_path):
+    pref_path = tmp_path / "prefs.json"
+    missing_dir = tmp_path / "does-not-exist"
+
+    assert save_preferences({"last_media_dir": str(missing_dir)}, str(pref_path))
+    assert get_last_media_dir(str(pref_path)) is None

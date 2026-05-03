@@ -55,3 +55,24 @@ def set_splitter_mode(mode: str, path: str | None = None) -> bool:
     prefs = load_preferences(path)
     prefs["splitter_mode"] = mode
     return save_preferences(prefs, path)
+
+
+def get_last_media_dir(path: str | None = None) -> str | None:
+    """Get the last used media directory if it is still valid."""
+    prefs = load_preferences(path)
+    media_dir = prefs.get("last_media_dir")
+    if not isinstance(media_dir, str):
+        return None
+    if os.path.isdir(media_dir):
+        return media_dir
+    return None
+
+
+def set_last_media_dir(directory: str, path: str | None = None) -> bool:
+    """Persist the last used media directory."""
+    if not directory or not isinstance(directory, str):
+        return False
+
+    prefs = load_preferences(path)
+    prefs["last_media_dir"] = directory
+    return save_preferences(prefs, path)

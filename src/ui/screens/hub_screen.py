@@ -7,6 +7,7 @@ from textual.message import Message
 from ui.screens.clipper_screen import ClipperScreen
 from ui.screens.splitter_screen import SplitterScreen
 from ui.screens.merger_screen import MergerScreen
+from ui.preferences import get_last_media_dir, set_last_media_dir
 from logic.input_parsing import clean_pasted_path
 import os
 
@@ -200,6 +201,7 @@ class HubScreen(Container):
 
                 file_path = filedialog.askopenfilename(
                     title="Select Media",
+                    initialdir=get_last_media_dir() or None,
                     filetypes=[
                         ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
                         ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
@@ -207,6 +209,9 @@ class HubScreen(Container):
                     ],
                 )
                 if file_path:
+                    selected_dir = os.path.dirname(file_path)
+                    if selected_dir:
+                        set_last_media_dir(selected_dir)
                     self.app.call_from_thread(callback, file_path)
 
                 root.destroy()
