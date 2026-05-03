@@ -26,7 +26,7 @@ Extract specific moments with precision. Define multiple time ranges, preview du
 ![Clipper Tool](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/clipper.png)
 
 ### 🔪 Video Splitter
-Automate your content creation. Split long videos into perfectly timed chunks (e.g., 10-minute segments) with a single click. Ideal for platform-specific uploads.
+Automate your content creation. Split long videos by interval (MM:SS / HH:MM:SS) or by target total chunks with a single click. Ideal for platform-specific uploads.
 
 ![Splitter Tool](https://raw.githubusercontent.com/marodriguezd/Video-Slice-TUI/main/assets/splitter.png)
 

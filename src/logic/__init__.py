@@ -1,6 +1,7 @@
 """Logic module exports."""
 
 from .time_utils import parse_time, format_hhmmss
+from .split_utils import build_ranges_by_interval, build_ranges_by_count
 from .ffmpeg_utils import get_video_duration, run_ffmpeg
 from .input_parsing import clean_video_path, clean_pasted_path
 from .models import Range
@@ -23,6 +24,8 @@ from .ffmpeg_builder import (
 __all__ = [
     "parse_time",
     "format_hhmmss",
+    "build_ranges_by_interval",
+    "build_ranges_by_count",
     "get_video_duration",
     "run_ffmpeg",
     "clean_video_path",
