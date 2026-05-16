@@ -62,18 +62,23 @@ Combine multiple video files into a single, high-quality output. Add videos to y
 
 ### Launch the application:
 ```bash
+# Using the shortcut script (recommended for Linux/macOS)
+./arranque.sh          # Launches TUI
+./arranque.sh --gui    # Launches GUI
+
 # Full application with all tools
-python src/main.py
+python src/main.py         # Default (TUI)
+python src/main.py --gui   # GUI mode
 
 # Launch directly to a specific tool
 python src/main.py --tool clipper --video "C:\path\to\video.mp4"
-python src/main.py --tool splitter --video "C:\path\to\video.mp4"
-python src/main.py --tool merger
+python src/main.py --gui --tool splitter --video "C:\path\to\video.mp4"
 ```
 
 ### CLI Arguments:
 | Flag | Description |
 |------|-------------|
+| `--gui`, `-g` | Launch the **GUI** version instead of TUI |
 | `--tool <name>` | Launch specific tool: `clipper`, `splitter`, or `merger` |
 | `--video <path>` | Pre-load a video file (used with clipper/splitter) |
 

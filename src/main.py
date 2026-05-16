@@ -28,6 +28,7 @@ def parse_args():
         help="Start directly in the specified tool",
     )
     parser.add_argument("--video", "-v", help="Video file path to load on startup")
+    parser.add_argument("--gui", "-g", action="store_true", help="Launch the GUI version")
     return parser.parse_args()
 
 
@@ -37,14 +38,20 @@ def main():
     tool = args.tool
     video_path = args.video
 
-    if tool and video_path:
-        app = VideoSliceApp(start_tab=tool, video_path=video_path)
-    elif tool:
-        app = VideoSliceApp(start_tab=tool)
+    if args.gui:
+        try:
+            from ui.gui.app import VideoSliceGUIApp
+            app = VideoSliceGUIApp(start_tab=tool, video_path=video_path)
+            app.run()
+        except ImportError as e:
+            print(f"Error: GUI dependencies not found. Have you run 'pip install -r requirements.txt'?\nDetails: {e}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Failed to launch GUI: {e}")
+            sys.exit(1)
     else:
-        app = VideoSliceApp()
-
-    app.run()
+        app = VideoSliceApp(start_tab=tool, video_path=video_path)
+        app.run()
 
 
 if __name__ == "__main__":

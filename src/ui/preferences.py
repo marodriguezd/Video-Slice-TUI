@@ -73,6 +73,9 @@ def set_last_media_dir(directory: str, path: str | None = None) -> bool:
     if not directory or not isinstance(directory, str):
         return False
 
+    if not os.path.isdir(directory):
+        return False
+
     prefs = load_preferences(path)
     prefs["last_media_dir"] = directory
     return save_preferences(prefs, path)

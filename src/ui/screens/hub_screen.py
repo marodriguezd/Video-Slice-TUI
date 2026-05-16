@@ -209,6 +209,7 @@ class HubScreen(Container):
                     ],
                 )
                 if file_path:
+                    file_path = os.path.abspath(file_path)
                     selected_dir = os.path.dirname(file_path)
                     if selected_dir:
                         set_last_media_dir(selected_dir)
