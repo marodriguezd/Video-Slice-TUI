@@ -138,6 +138,36 @@ class SplitterGUI(ctk.CTkFrame):
             txt = f"Part #{r.idx}: {format_hhmmss(r.start)} -> {format_hhmmss(r.end)} ({r.duration():.2f}s)"
             lbl = ctk.CTkLabel(row, text=txt)
             lbl.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+            
+            # Bind scroll events to row and its children
+            self._bind_scroll_to_widgets(row)
+
+    def _bind_scroll_to_widgets(self, widget):
+        """Recursively bind mouse wheel events to propagate to the scrollable frame."""
+        widget.bind("<MouseWheel>", self._on_mouse_wheel)
+        widget.bind("<Button-4>", self._on_mouse_wheel)
+        widget.bind("<Button-5>", self._on_mouse_wheel)
+        for child in widget.winfo_children():
+            self._bind_scroll_to_widgets(child)
+
+    def _on_mouse_wheel(self, event):
+        """Redirect mouse wheel events to the scrollable frame canvas."""
+        # Support Linux (Button-4/5) and Windows/macOS (MouseWheel)
+        if event.num == 4:
+            delta = -1
+        elif event.num == 5:
+            delta = 1
+        else:
+            delta = int(-1 * (event.delta / 120))
+        
+        # Access CTkScrollableFrame internal canvas
+        try:
+            if hasattr(self.queue_frame, "_parent_canvas"):
+                self.queue_frame._parent_canvas.yview_scroll(delta, "units")
+            elif hasattr(self.queue_frame, "_canvas"):
+                self.queue_frame._canvas.yview_scroll(delta, "units")
+        except Exception:
+            pass
 
     def _log(self, message):
         self.after(0, lambda: self.status_label.configure(text=message.strip()))

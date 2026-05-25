@@ -101,6 +101,36 @@ class MergerGUI(ctk.CTkFrame):
 
             del_btn = ctk.CTkButton(row, text="X", width=30, fg_color="#aa0000", hover_color="#880000", command=lambda idx=i: self._remove_item(idx))
             del_btn.grid(row=0, column=3, padx=5, pady=5)
+            
+            # Bind scroll events to row and its children
+            self._bind_scroll_to_widgets(row)
+
+    def _bind_scroll_to_widgets(self, widget):
+        """Recursively bind mouse wheel events to propagate to the scrollable frame."""
+        widget.bind("<MouseWheel>", self._on_mouse_wheel)
+        widget.bind("<Button-4>", self._on_mouse_wheel)
+        widget.bind("<Button-5>", self._on_mouse_wheel)
+        for child in widget.winfo_children():
+            self._bind_scroll_to_widgets(child)
+
+    def _on_mouse_wheel(self, event):
+        """Redirect mouse wheel events to the scrollable frame canvas."""
+        # Support Linux (Button-4/5) and Windows/macOS (MouseWheel)
+        if event.num == 4:
+            delta = -1
+        elif event.num == 5:
+            delta = 1
+        else:
+            delta = int(-1 * (event.delta / 120))
+        
+        # Access CTkScrollableFrame internal canvas
+        try:
+            if hasattr(self.queue_frame, "_parent_canvas"):
+                self.queue_frame._parent_canvas.yview_scroll(delta, "units")
+            elif hasattr(self.queue_frame, "_canvas"):
+                self.queue_frame._canvas.yview_scroll(delta, "units")
+        except Exception:
+            pass
 
     def _move_item(self, index, direction):
         new_index = index + direction
