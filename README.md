@@ -53,10 +53,12 @@ Combine multiple video files into a single, high-quality output. Add videos to y
    cd Video-Slice-TUI
    ```
 
-2. **Install dependencies:**
+2. **Start the app:** the launcher creates `.venv` and installs the Python dependencies the first time it runs.
    ```bash
-   pip install -r requirements.txt
+   ./arranque.sh
    ```
+
+   To install the environment manually, run `python3 -m venv .venv` followed by `.venv/bin/python -m pip install -r requirements.txt`.
 
 ## ⌨️ Usage
 
@@ -74,6 +76,8 @@ python src/main.py --gui   # GUI mode
 python src/main.py --tool clipper --video "C:\path\to\video.mp4"
 python src/main.py --gui --tool splitter --video "C:\path\to\video.mp4"
 ```
+
+The TUI asks for file and folder paths inside the terminal, so it does not need Tkinter. The optional desktop GUI uses Tkinter in addition to the Python packages. On Linux, install the system package if it is missing (`python3-tkinter` on Fedora, `python3-tk` on Debian/Ubuntu, or `tk` on Arch Linux).
 
 ### CLI Arguments:
 | Flag | Description |

@@ -195,77 +195,17 @@ class ScreenBase(Container):
         self.status_bar.update("")
 
     def open_file_dialog(self, callback, multi: bool = False):
-        """Open a native OS file selector using Tkinter in a separate thread."""
-        import tkinter as tk
-        from tkinter import filedialog
-        import threading
+        """Ask for media paths in a TUI modal (no Tk installation required)."""
+        from ui.components.path_prompt import prompt_for_path
 
-        def run_dialog():
-            try:
-                # Initialize a temporary hidden root
-                root = tk.Tk()
-                root.withdraw()
-                # Bring dialog to front
-                root.attributes("-topmost", True)
-                root.focus_force()
-
-                if multi:
-                    file_paths = filedialog.askopenfilenames(
-                        title="Select Media",
-                        filetypes=[
-                            ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
-                            ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
-                            ("All files", "*.*"),
-                        ],
-                    )
-                    if file_paths:
-                        self.app.call_from_thread(callback, list(file_paths))
-                else:
-                    file_path = filedialog.askopenfilename(
-                        title="Select Media",
-                        filetypes=[
-                            ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
-                            ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
-                            ("All files", "*.*"),
-                        ],
-                    )
-                    if file_path:
-                        self.app.call_from_thread(callback, file_path)
-
-                root.destroy()
-            except Exception as e:
-                self.app.call_from_thread(
-                    self.show_status, f"❌ Dialog Error: {str(e)}", "error"
-                )
-
-        thread = threading.Thread(target=run_dialog, daemon=True)
-        thread.start()
+        title = "Add media paths" if multi else "Enter media path"
+        prompt_for_path(self.app, title, callback, multi=multi)
 
     def open_folder_dialog(self, callback):
-        """Open a native OS folder selector using Tkinter in a separate thread."""
-        import tkinter as tk
-        from tkinter import filedialog
-        import threading
+        """Ask for an output directory in a TUI modal."""
+        from ui.components.path_prompt import prompt_for_path
 
-        def run_dialog():
-            try:
-                root = tk.Tk()
-                root.withdraw()
-                root.attributes("-topmost", True)
-                root.focus_force()
-
-                folder_path = filedialog.askdirectory(title="Select Output Folder")
-                if folder_path:
-                    self.app.call_from_thread(callback, folder_path)
-
-                root.destroy()
-            except Exception as e:
-                self.app.call_from_thread(
-                    self.show_status, f"❌ Dialog Error: {str(e)}", "error"
-                )
-
-        thread = threading.Thread(target=run_dialog, daemon=True)
-        thread.start()
+        prompt_for_path(self.app, "Enter output folder", callback)
 
     def try_load_path(self, path: str) -> bool:
         """Try to load a video path from input."""

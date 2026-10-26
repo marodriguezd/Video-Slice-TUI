@@ -7,7 +7,7 @@ from textual.message import Message
 from ui.screens.clipper_screen import ClipperScreen
 from ui.screens.splitter_screen import SplitterScreen
 from ui.screens.merger_screen import MergerScreen
-from ui.preferences import get_last_media_dir, set_last_media_dir
+from ui.preferences import set_last_media_dir
 from logic.input_parsing import clean_pasted_path
 import os
 
@@ -107,7 +107,7 @@ class HubScreen(Container):
                         yield self.hub_video_input
                         with Horizontal(classes="hub-row"):
                             yield Button(
-                                "SELECT MEDIA", id="hub_browse_video_btn", variant="primary"
+                                "ENTER MEDIA PATH", id="hub_browse_video_btn", variant="primary"
                             )
                             yield Button("REMOVE", id="hub_clear_video_btn", variant="error")
 
@@ -119,7 +119,7 @@ class HubScreen(Container):
                         yield self.hub_export_input
                         with Horizontal(classes="hub-row"):
                             yield Button(
-                                "SELECT FOLDER", id="hub_browse_export_btn", variant="primary"
+                                "ENTER EXPORT PATH", id="hub_browse_export_btn", variant="primary"
                             )
                             yield Button(
                                 "REMOVE", id="hub_clear_export_btn", variant="error"
@@ -187,64 +187,23 @@ class HubScreen(Container):
 
 
     def open_file_dialog(self, callback):
-        """Open a native OS file selector using Tkinter in a separate thread."""
-        import tkinter as tk
-        from tkinter import filedialog
-        import threading
+        """Prompt for a media path using Textual, without requiring Tk."""
+        from ui.components.path_prompt import prompt_for_path
 
-        def run_dialog():
-            try:
-                root = tk.Tk()
-                root.withdraw()
-                root.attributes("-topmost", True)
-                root.focus_force()
+        def on_path(file_path):
+            file_path = os.path.abspath(file_path)
+            selected_dir = os.path.dirname(file_path)
+            if selected_dir:
+                set_last_media_dir(selected_dir)
+            callback(file_path)
 
-                file_path = filedialog.askopenfilename(
-                    title="Select Media",
-                    initialdir=get_last_media_dir() or None,
-                    filetypes=[
-                        ("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"),
-                        ("Audio files", "*.mp3 *.wav *.flac *.m4a *.ogg"),
-                        ("All files", "*.*"),
-                    ],
-                )
-                if file_path:
-                    file_path = os.path.abspath(file_path)
-                    selected_dir = os.path.dirname(file_path)
-                    if selected_dir:
-                        set_last_media_dir(selected_dir)
-                    self.app.call_from_thread(callback, file_path)
-
-                root.destroy()
-            except Exception as e:
-                self.app.call_from_thread(self._show_error, f"Dialog Error: {str(e)}")
-
-        thread = threading.Thread(target=run_dialog, daemon=True)
-        thread.start()
+        prompt_for_path(self.app, "Enter media path", on_path)
 
     def open_folder_dialog(self, callback):
-        """Open a native OS folder selector using Tkinter in a separate thread."""
-        import tkinter as tk
-        from tkinter import filedialog
-        import threading
+        """Prompt for an export directory using Textual, without requiring Tk."""
+        from ui.components.path_prompt import prompt_for_path
 
-        def run_dialog():
-            try:
-                root = tk.Tk()
-                root.withdraw()
-                root.attributes("-topmost", True)
-                root.focus_force()
-
-                folder_path = filedialog.askdirectory(title="Select Output Folder")
-                if folder_path:
-                    self.app.call_from_thread(callback, folder_path)
-
-                root.destroy()
-            except Exception as e:
-                self.app.call_from_thread(self._show_error, f"Dialog Error: {str(e)}")
-
-        thread = threading.Thread(target=run_dialog, daemon=True)
-        thread.start()
+        prompt_for_path(self.app, "Enter output folder", callback)
 
     def _show_error(self, message: str):
         self.notify(message, severity="error")

@@ -43,8 +43,27 @@ def main():
             from ui.gui.app import VideoSliceGUIApp
             app = VideoSliceGUIApp(start_tab=tool, video_path=video_path)
             app.run()
+        except ModuleNotFoundError as e:
+            if e.name == "tkinter" or (e.name and e.name.startswith("_tkinter")):
+                print(
+                    "Error: the GUI needs Tkinter, a system package that pip cannot install.\n"
+                    "Fedora: sudo dnf install python3-tkinter\n"
+                    "Debian/Ubuntu: sudo apt install python3-tk\n"
+                    "Arch Linux: sudo pacman -S tk"
+                )
+            else:
+                print(
+                    "Error: GUI dependencies are missing. Run "
+                    "'.venv/bin/python -m pip install -r requirements.txt'.\n"
+                    f"Details: {e}"
+                )
+            sys.exit(1)
         except ImportError as e:
-            print(f"Error: GUI dependencies not found. Have you run 'pip install -r requirements.txt'?\nDetails: {e}")
+            print(
+                "Error: GUI dependencies are missing. Run "
+                "'.venv/bin/python -m pip install -r requirements.txt'.\n"
+                f"Details: {e}"
+            )
             sys.exit(1)
         except Exception as e:
             print(f"Failed to launch GUI: {e}")

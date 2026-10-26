@@ -57,11 +57,8 @@ class VideoSliceApp(App):
                     timeout=20
                 )
 
-        if self.start_video_path and self.start_tab:
-            hub = self.query_one(HubScreen)
-            hub.active_tab = self.start_tab
-
-            content = hub.query_one(f"#{self.start_tab}_screen")
-            if content and hasattr(content, "video_path"):
-                content.video_path = self.start_video_path
-                await content.load_video_info()
+        hub = self.query_one(HubScreen)
+        if self.start_video_path:
+            hub.shared_video_path = self.start_video_path
+        if self.start_tab:
+            hub.active_tab_id = self.start_tab
