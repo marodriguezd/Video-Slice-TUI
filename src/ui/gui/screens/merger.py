@@ -61,11 +61,15 @@ class MergerGUI(ctk.CTkFrame):
 
     def _add_media(self):
         initial_dir = get_last_media_dir() or os.path.expanduser("~")
-        filenames = filedialog.askopenfilenames(
-            initialdir=initial_dir,
-            title="Select Video Files to Merge",
-            filetypes=(("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("all files", "*.*"))
-        )
+        try:
+            filenames = filedialog.askopenfilenames(
+                initialdir=initial_dir,
+                title="Select Video Files to Merge",
+                filetypes=(("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("all files", "*.*"))
+            )
+        except Exception as error:
+            messagebox.showerror("File chooser error", f"Could not open the media picker:\n{error}")
+            return
         if filenames:
             for f in filenames:
                 f_abs = os.path.abspath(f)

@@ -7,7 +7,7 @@ from textual.message import Message
 from ui.screens.clipper_screen import ClipperScreen
 from ui.screens.splitter_screen import SplitterScreen
 from ui.screens.merger_screen import MergerScreen
-from ui.preferences import set_last_media_dir
+from ui.preferences import get_last_media_dir, set_last_media_dir
 from logic.input_parsing import clean_pasted_path
 import os
 
@@ -107,7 +107,7 @@ class HubScreen(Container):
                         yield self.hub_video_input
                         with Horizontal(classes="hub-row"):
                             yield Button(
-                                "ENTER MEDIA PATH", id="hub_browse_video_btn", variant="primary"
+                                "SELECT MEDIA", id="hub_browse_video_btn", variant="primary"
                             )
                             yield Button("REMOVE", id="hub_clear_video_btn", variant="error")
 
@@ -119,7 +119,7 @@ class HubScreen(Container):
                         yield self.hub_export_input
                         with Horizontal(classes="hub-row"):
                             yield Button(
-                                "ENTER EXPORT PATH", id="hub_browse_export_btn", variant="primary"
+                                "SELECT FOLDER", id="hub_browse_export_btn", variant="primary"
                             )
                             yield Button(
                                 "REMOVE", id="hub_clear_export_btn", variant="error"
@@ -187,7 +187,8 @@ class HubScreen(Container):
 
 
     def open_file_dialog(self, callback):
-        """Prompt for a media path using Textual, without requiring Tk."""
+        """Open a native file picker, with a path-entry fallback."""
+        from ui.components.file_dialog import open_native_dialog
         from ui.components.path_prompt import prompt_for_path
 
         def on_path(file_path):
@@ -197,13 +198,38 @@ class HubScreen(Container):
                 set_last_media_dir(selected_dir)
             callback(file_path)
 
-        prompt_for_path(self.app, "Enter media path", on_path)
+        open_native_dialog(
+            self.app,
+            on_path,
+            mode="file",
+            title="Select video or audio",
+            initialdir=get_last_media_dir(),
+            fallback=lambda: prompt_for_path(
+                self.app, "Enter media path", on_path
+            ),
+            on_error=lambda message: self.notify(
+                f"⚠️ {message}. Paste a path instead.", severity="warning"
+            ),
+        )
 
     def open_folder_dialog(self, callback):
-        """Prompt for an export directory using Textual, without requiring Tk."""
+        """Open a native folder picker, with a path-entry fallback."""
+        from ui.components.file_dialog import open_native_dialog
         from ui.components.path_prompt import prompt_for_path
 
-        prompt_for_path(self.app, "Enter output folder", callback)
+        open_native_dialog(
+            self.app,
+            callback,
+            mode="folder",
+            title="Select export folder",
+            initialdir=self.shared_export_path or get_last_media_dir(),
+            fallback=lambda: prompt_for_path(
+                self.app, "Enter output folder", callback
+            ),
+            on_error=lambda message: self.notify(
+                f"⚠️ {message}. Paste a path instead.", severity="warning"
+            ),
+        )
 
     def _show_error(self, message: str):
         self.notify(message, severity="error")

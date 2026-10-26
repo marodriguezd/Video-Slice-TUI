@@ -1,4 +1,4 @@
-"""Textual path entry modal, avoiding a system Tk dependency in the TUI."""
+"""Textual path entry fallback for unavailable native file selectors."""
 
 from collections.abc import Callable
 

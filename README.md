@@ -77,7 +77,7 @@ python src/main.py --tool clipper --video "C:\path\to\video.mp4"
 python src/main.py --gui --tool splitter --video "C:\path\to\video.mp4"
 ```
 
-The TUI asks for file and folder paths inside the terminal, so it does not need Tkinter. The optional desktop GUI uses Tkinter in addition to the Python packages. On Linux, install the system package if it is missing (`python3-tkinter` on Fedora, `python3-tk` on Debian/Ubuntu, or `tk` on Arch Linux).
+The TUI and desktop GUI both open native file and folder pickers. The TUI falls back to asking for a pasted path if Tkinter or a desktop display is unavailable. On Linux, install Tkinter for native dialogs (`python3-tkinter` on Fedora, `python3-tk` on Debian/Ubuntu, or `tk` on Arch Linux).
 
 ### CLI Arguments:
 | Flag | Description |

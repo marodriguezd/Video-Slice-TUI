@@ -195,17 +195,44 @@ class ScreenBase(Container):
         self.status_bar.update("")
 
     def open_file_dialog(self, callback, multi: bool = False):
-        """Ask for media paths in a TUI modal (no Tk installation required)."""
+        """Open the native media chooser, falling back to terminal path entry."""
+        from ui.components.file_dialog import open_native_dialog
         from ui.components.path_prompt import prompt_for_path
+        from ui.preferences import get_last_media_dir
 
-        title = "Add media paths" if multi else "Enter media path"
-        prompt_for_path(self.app, title, callback, multi=multi)
+        def fallback():
+            title = "Add media paths" if multi else "Enter media path"
+            prompt_for_path(self.app, title, callback, multi=multi)
+
+        open_native_dialog(
+            self.app,
+            callback,
+            mode="files" if multi else "file",
+            title="Select media files" if multi else "Select media file",
+            initialdir=get_last_media_dir(),
+            fallback=fallback,
+            on_error=lambda message: self.show_status(
+                f"⚠️ {message}. Paste a path instead.", "warning", duration=8
+            ),
+        )
 
     def open_folder_dialog(self, callback):
-        """Ask for an output directory in a TUI modal."""
+        """Open the native folder chooser, with a terminal path fallback."""
+        from ui.components.file_dialog import open_native_dialog
         from ui.components.path_prompt import prompt_for_path
 
-        prompt_for_path(self.app, "Enter output folder", callback)
+        open_native_dialog(
+            self.app,
+            callback,
+            mode="folder",
+            title="Select output folder",
+            fallback=lambda: prompt_for_path(
+                self.app, "Enter output folder", callback
+            ),
+            on_error=lambda message: self.show_status(
+                f"⚠️ {message}. Paste a path instead.", "warning", duration=8
+            ),
+        )
 
     def try_load_path(self, path: str) -> bool:
         """Try to load a video path from input."""

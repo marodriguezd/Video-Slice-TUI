@@ -1,6 +1,6 @@
 import os
 import customtkinter as ctk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from logic.input_parsing import clean_pasted_path
 from ui.preferences import get_last_media_dir, set_last_media_dir
 
@@ -82,11 +82,17 @@ class HubGUI(ctk.CTkFrame):
 
     def _browse_video(self):
         initial_dir = get_last_media_dir() or os.path.expanduser("~")
-        filename = filedialog.askopenfilename(
-            initialdir=initial_dir,
-            title="Select Video File",
-            filetypes=(("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("all files", "*.*"))
-        )
+        if not os.path.isdir(initial_dir):
+            initial_dir = os.path.expanduser("~")
+        try:
+            filename = filedialog.askopenfilename(
+                initialdir=initial_dir,
+                title="Select Video File",
+                filetypes=(("Video files", "*.mp4 *.mkv *.avi *.mov *.m4v"), ("all files", "*.*"))
+            )
+        except Exception as error:
+            messagebox.showerror("File chooser error", f"Could not open the media picker:\n{error}")
+            return
         if filename:
             filename = os.path.abspath(filename)
             self.video_entry.delete(0, ctk.END)
@@ -96,10 +102,16 @@ class HubGUI(ctk.CTkFrame):
 
     def _browse_export(self):
         initial_dir = self.shared_state.get("export_path") or get_last_media_dir() or os.path.expanduser("~")
-        directory = filedialog.askdirectory(
-            initialdir=initial_dir,
-            title="Select Export Directory"
-        )
+        if not os.path.isdir(initial_dir):
+            initial_dir = get_last_media_dir() or os.path.expanduser("~")
+        try:
+            directory = filedialog.askdirectory(
+                initialdir=initial_dir,
+                title="Select Export Directory"
+            )
+        except Exception as error:
+            messagebox.showerror("Folder chooser error", f"Could not open the export folder picker:\n{error}")
+            return
         if directory:
             directory = os.path.abspath(directory)
             self.export_entry.delete(0, ctk.END)
